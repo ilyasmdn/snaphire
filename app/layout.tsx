@@ -7,11 +7,6 @@ const roboto = Roboto({
   subsets: ["latin"],
 });
 
-const openSans = Open_Sans({
-  variable: "--font-open-sans",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
   title: "SnapHire",
   description: "An AI-Powered platform for preparing for interviews"
@@ -25,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${roboto.variable} ${openSans.variable} antialiased`}
+        className={`${roboto.className} antialiased`}
       >
         {children}
       </body>
