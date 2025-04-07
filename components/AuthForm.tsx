@@ -1,22 +1,14 @@
 "use client";
 
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Label } from "./ui/label";
+import Link from "next/link";
 
 const formSchema = z.object({
   name: z.string().min(2, "Name too short"),
@@ -115,9 +107,9 @@ const AuthForm = ({ type }: { type: AuthFormType }) => {
           </div>
           <div className="text-center text-sm">
           {type=="sign-in" ? "Don't have an account? " : "Already have an account? "}
-            <a href="#" className="underline underline-offset-4">
+            <Link href={type=="sign-in" ? "sign-up" : "sign-in"} className="underline underline-offset-4">
               {type=="sign-in" ? "Sign up" : "Login"}
-            </a>
+            </Link>
           </div>
         </form>
       </Form>

@@ -119,7 +119,7 @@
 
   --text-sm: 0.750rem;
   --text-base: 1rem;
-  --text-xl: '1.333rem';
+  --text-xl: 1.333rem;
   --text-2xl: 1.777rem;
   --text-3xl: 2.369rem;
   --text-4xl: 3.158rem;
@@ -132,6 +132,10 @@
   --color-primary: #3399ff;
   --color-secondary: #004c99;
   --color-accent: #7849c7;
+}
+
+.nav-link {
+  @apply relative text-text font-medium hover:text-primary after:content-[''] after:block after:absolute after:-bottom-0.5 after:right-0 after:bg-primary after:h-0.5 after:w-full after:scale-0 hover:after:scale-100 after:transition transition;
 }
 
 @layer base {
