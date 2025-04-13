@@ -94,7 +94,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Overview */}
-      <div className="grid md:grid-cols-4 gap-4">
+      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="p-4 flex flex-col">
           <p className="text-sm text-muted-foreground">Total Interviews</p>
           <p className="text-2xl font-bold mt-2">12</p>

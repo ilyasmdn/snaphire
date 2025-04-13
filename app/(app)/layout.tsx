@@ -1,15 +1,34 @@
 "use client";
 
-import { ReactNode, useRef, useEffect } from "react";
+import { ReactNode } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { sidebarLinks } from "@/lib/constants";
 import { MobileNav } from "@/components/MobileNav";
+import { auth } from "@/firebase/client";
+import { signOut } from "firebase/auth";
+import { toast } from "sonner";
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await signOut(auth);
+      
+      // Clear the session cookie
+      await fetch('/api/auth/logout', { method: 'POST' });
+      
+      toast.success('Signed out successfully');
+      router.push('/sign-in');
+    } catch (error) {
+      console.error('Logout error:', error);
+      toast.error('Failed to sign out');
+    }
+  };
 
   return (
     <div className="flex h-screen">
@@ -24,9 +43,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
         <nav className="flex-1 space-y-1 px-2 py-4">
           {sidebarLinks.map((link) => {
-            const isActive = pathname === link.href;
+            const isActive = pathname === `/app${link.href}`;
             return (
-              <Link key={link.href} href={link.href}>
+              <Link key={link.href} href={`/app${link.href}`}>
                 <span
                   className={`group flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                     isActive
@@ -46,10 +65,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           <Button
             variant="ghost"
             className="w-full justify-start text-muted-foreground hover:text-foreground"
-            onClick={() => {
-              // Add logout logic here
-              window.location.href = "/auth/sign-in";
-            }}
+            onClick={handleLogout}
           >
             <LogOut className="mr-3 h-5 w-5" />
             Logout

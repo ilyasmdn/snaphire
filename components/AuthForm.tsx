@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -18,6 +18,14 @@ import Link from "next/link";
 import { useState } from "react";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  GoogleAuthProvider,
+  signInWithPopup,
+} from "firebase/auth";
+import { auth } from "@/firebase/client";
+import { signIn, signUp } from "@/lib/actions/auth.action";
 
 type AuthFormType = "sign-in" | "sign-up";
 
@@ -31,7 +39,14 @@ const createFormSchema = (type: AuthFormType) => {
     return z
       .object({
         ...baseSchema,
-        name: z.string().min(2, "Name must be at least 2 characters"),
+        name: z
+          .string()
+          .min(2, "Name must be at least 2 characters")
+          .max(50, "Name must be less than 50 characters")
+          .regex(
+            /^[a-zA-Z\s'-]+$/,
+            "Name can only contain letters, spaces, hyphens and apostrophes"
+          ),
         confirmPassword: z.string(),
       })
       .refine((data) => data.password === data.confirmPassword, {
@@ -45,7 +60,11 @@ const createFormSchema = (type: AuthFormType) => {
 
 const AuthForm = ({ type }: { type: AuthFormType }) => {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
+
+  // Get the redirect URL if it exists
+  const redirectUrl = searchParams.get('redirect') || '/app/dashboard';
 
   const formSchema = createFormSchema(type);
   type FormSchema = z.infer<ReturnType<typeof createFormSchema>>;
@@ -60,19 +79,160 @@ const AuthForm = ({ type }: { type: AuthFormType }) => {
   });
 
   const onSubmit = async (values: FormSchema) => {
+    setIsLoading(true);
+    try {
+      if (type === "sign-up") {
+        const { email, password } = values;
+        const name = (values as { name: string }).name;
+
+        try {
+          const userCredentials = await createUserWithEmailAndPassword(
+            auth,
+            email,
+            password
+          );
+          const idToken = await userCredentials.user.getIdToken();
+
+          const result = await signUp({
+            uid: userCredentials.user.uid,
+            email,
+            name,
+            password,
+          });
+
+          if (!result?.success) {
+            toast.error(result?.error || "Failed to create account");
+            return;
+          }
+
+          toast.success(result.message || "Account created successfully!");
+          router.push(redirectUrl);
+        } catch (error: any) {
+          console.error("Signup error:", error);
+          if (
+            error.code === "auth/email-already-in-use" ||
+            (error.customData?.message &&
+              error.customData.message.includes("EMAIL_EXISTS"))
+          ) {
+            toast.error(
+              "This email is already registered. Please sign in instead."
+            );
+          } else if (error.code === "auth/invalid-email") {
+            toast.error("Please enter a valid email address.");
+          } else if (error.code === "auth/weak-password") {
+            toast.error("Password should be at least 8 characters long.");
+          } else {
+            toast.error(
+              error.message || "Failed to create account. Please try again."
+            );
+          }
+        }
+      } else {
+        try {
+          const { email, password } = values;
+          const userCredentials = await signInWithEmailAndPassword(
+            auth,
+            email,
+            password
+          );
+          const idToken = await userCredentials.user.getIdToken();
+
+          const result = await signIn({
+            email,
+            idToken,
+          });
+
+          if (!result?.success) {
+            toast.error(result?.error || "Failed to sign in");
+            return;
+          }
+
+          toast.success(result.message || "Signed in successfully!");
+          router.push(redirectUrl);
+        } catch (error: any) {
+          console.error("Signin error:", error);
+          if (error.code === "auth/user-not-found") {
+            toast.error(
+              "No account found with this email. Please sign up first."
+            );
+          } else if (error.code === "auth/wrong-password") {
+            toast.error("Incorrect password. Please try again.");
+          } else if (error.code === "auth/too-many-requests") {
+            toast.error("Too many failed attempts. Please try again later.");
+          } else if (
+            error.code === "auth/email-already-in-use" ||
+            (error.customData?.message &&
+              error.customData.message.includes("EMAIL_EXISTS"))
+          ) {
+            toast.error(
+              "This email is already registered. Please sign in instead."
+            );
+          } else {
+            toast.error(
+              error.message || "Failed to sign in. Please try again."
+            );
+          }
+        }
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
     try {
       setIsLoading(true);
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      // Here you'd call your backend or auth service
-      console.log("Form submitted:", values);
-      localStorage.setItem("user", JSON.stringify(values));
-      toast.success(
-        type === "sign-in" ? "Welcome back!" : "Account created successfully!"
-      );
-      router.push("/app/dashboard");
-    } catch (error) {
-      toast.error("Something went wrong. Please try again.");
+      const provider = new GoogleAuthProvider();
+      const userCredential = await signInWithPopup(auth, provider);
+      const idToken = await userCredential.user.getIdToken();
+
+      if (!idToken) {
+        toast.error("Failed to authenticate with Google");
+        return;
+      }
+
+      if (type === "sign-up") {
+        const result = await signUp({
+          uid: userCredential.user.uid,
+          email: userCredential.user.email!,
+          name: userCredential.user.displayName || "User",
+          password: "",
+        });
+
+        if (!result?.success) {
+          toast.error(result?.error || "Failed to create account");
+          return;
+        }
+
+        toast.success(result.message || "Account created successfully!");
+      } else {
+        const result = await signIn({
+          email: userCredential.user.email!,
+          idToken,
+        });
+
+        if (!result?.success) {
+          toast.error(result?.error || "Failed to sign in");
+          return;
+        }
+
+        toast.success(result.message || "Signed in successfully!");
+      }
+
+      router.push(redirectUrl);
+    } catch (error: any) {
+      console.error("Google signin error:", error);
+      if (error.code === "auth/popup-closed-by-user") {
+        toast.error("Sign in was cancelled");
+      } else if (
+        error.code === "auth/account-exists-with-different-credential"
+      ) {
+        toast.error(
+          "An account already exists with this email. Please sign in with your original method."
+        );
+      } else {
+        toast.error("Failed to authenticate with Google. Please try again.");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -95,19 +255,21 @@ const AuthForm = ({ type }: { type: AuthFormType }) => {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             {type === "sign-up" && (
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input placeholder="John Doe" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <>
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Name</FormLabel>
+                      <FormControl>
+                        <Input placeholder="John Smith" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </>
             )}
 
             <FormField
@@ -205,9 +367,7 @@ const AuthForm = ({ type }: { type: AuthFormType }) => {
           type="button"
           disabled={isLoading}
           className="w-full hover:bg-secondary"
-          onClick={() => {
-            toast.info("Google Sign In coming soon!");
-          }}
+          onClick={handleGoogleSignIn}
         >
           <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
             <path
