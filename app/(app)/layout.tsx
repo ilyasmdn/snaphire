@@ -18,15 +18,15 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const handleLogout = async () => {
     try {
       await signOut(auth);
-      
+
       // Clear the session cookie
-      await fetch('/api/auth/logout', { method: 'POST' });
-      
-      toast.success('Signed out successfully');
-      router.push('/sign-in');
+      await fetch("/api/auth/logout", { method: "POST" });
+
+      toast.success("Signed out successfully");
+      router.push("/sign-in");
     } catch (error) {
-      console.error('Logout error:', error);
-      toast.error('Failed to sign out');
+      console.error("Logout error:", error);
+      toast.error("Failed to sign out");
     }
   };
 
