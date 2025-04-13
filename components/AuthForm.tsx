@@ -5,114 +5,243 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
-import { Form } from "@/components/ui/form";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "./ui/label";
 import Link from "next/link";
-
-const formSchema = z.object({
-  name: z.string().min(2, "Name too short"),
-  email: z.string().email("Invalid email"),
-  password: z.string().min(6, "Password too short"),
-});
+import { useState } from "react";
+import { ArrowRight, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 type AuthFormType = "sign-in" | "sign-up";
 
+const createFormSchema = (type: AuthFormType) => {
+  const baseSchema = {
+    email: z.string().email("Please enter a valid email address"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+  };
+
+  if (type === "sign-up") {
+    return z
+      .object({
+        ...baseSchema,
+        name: z.string().min(2, "Name must be at least 2 characters"),
+        confirmPassword: z.string(),
+      })
+      .refine((data) => data.password === data.confirmPassword, {
+        message: "Passwords do not match",
+        path: ["confirmPassword"],
+      });
+  }
+
+  return z.object(baseSchema);
+};
+
 const AuthForm = ({ type }: { type: AuthFormType }) => {
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  const formSchema = createFormSchema(type);
+  type FormSchema = z.infer<ReturnType<typeof createFormSchema>>;
+
+  const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: "",
       email: "",
       password: "",
+      ...(type === "sign-up" ? { name: "", confirmPassword: "" } : {}),
     },
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    // Here you’d call your backend or auth API
-    console.log("User created:", values);
-    localStorage.setItem("user", JSON.stringify(values));
-    router.push("/plans");
+  const onSubmit = async (values: FormSchema) => {
+    try {
+      setIsLoading(true);
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      // Here you'd call your backend or auth service
+      console.log("Form submitted:", values);
+      localStorage.setItem("user", JSON.stringify(values));
+      toast.success(
+        type === "sign-in" ? "Welcome back!" : "Account created successfully!"
+      );
+      router.push("/app/dashboard");
+    } catch (error) {
+      toast.error("Something went wrong. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <div className="p-8 border shadow-lg rounded-md w-full max-w-sm">
-      <Form {...form}>
-        <form className={"flex flex-col gap-6"}>
-          <div className="flex flex-col items-center gap-2 text-center">
-            <h1 className="text-2xl font-bold">{type=="sign-in" ? "Login to your account" : "Create an Account"}</h1>
-            <p className="text-balance text-sm text-muted-foreground">
-              {type=="sign-in" ? "Enter your email below to login to your account" : "Create an account to start using SnapHire"}
-            </p>
-          </div>
-          <div className="grid gap-6">
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="m@example.com"
-                required
+    <div className="w-full max-w-md mx-auto my-4 md:my-6">
+      <div className="bg-card text-card-foreground rounded-xl border shadow-sm p-8 space-y-8 animate-in slide-in-from-bottom-4 duration-1000 fade-in-0">
+        <div className="flex flex-col space-y-2 text-center">
+          <h1 className="text-2xl font-bold tracking-tight">
+            {type === "sign-in" ? "Welcome back" : "Create an account"}
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            {type === "sign-in"
+              ? "Enter your email to sign in to your account"
+              : "Enter your information to create your account"}
+          </p>
+        </div>
+
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {type === "sign-up" && (
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="John Doe" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            <div className="grid gap-2">
-              <div className="flex items-center">
-                <Label htmlFor="password">Password</Label>
-                {type=="sign-in" && 
-                <a
-                  href="#"
-                  className="ml-auto text-sm underline-offset-4 hover:underline"
-                >
-                  Forgot your password?
-                </a>}
-              </div>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                required
+            )}
+
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="name@example.com"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <div className="flex items-center justify-between">
+                    <FormLabel>Password</FormLabel>
+                    {type === "sign-in" && (
+                      <Link
+                        href="/forgot-password"
+                        className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        Forgot password?
+                      </Link>
+                    )}
+                  </div>
+                  <FormControl>
+                    <Input type="password" placeholder="••••••••" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {type === "sign-up" && (
+              <FormField
+                control={form.control}
+                name="confirmPassword"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Confirm Password</FormLabel>
+                    <FormControl>
+                      <Input
+                        type="password"
+                        placeholder="••••••••"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
               />
-            </div>
-            {type=="sign-up" && 
-            <div className="grid gap-2">
-              <div className="flex items-center">
-                <Label htmlFor="password">Repeat Password</Label>
-              </div>
-              <Input
-                id="re-password"
-                type="password"
-                placeholder="••••••••"
-                required
-              />
-            </div>}
-            <Button type="submit" className="w-full cursor-pointer">
-              {type=="sign-in" ? "Login" : "Create Account"}
+            )}
+
+            <Button
+              type="submit"
+              className="w-full font-medium"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  {type === "sign-in" ? "Sign In" : "Create Account"}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </>
+              )}
             </Button>
-            <div className="relative text-center text-sm after:absolute after:inset-0 after:top-1/2 after:z-0 after:flex after:items-center after:border-t after:border-border">
-              <span className="relative z-10 bg-background px-2 text-muted-foreground">
-                Or continue with
-              </span>
-            </div>
-            <Button variant="outline" className="w-full hover:bg-text/20! cursor-pointer">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-                <path
-                  d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
-                  fill="currentColor"
-                />
-              </svg>
-              Continue with Google
-            </Button>
+          </form>
+        </Form>
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t" />
           </div>
-          <div className="text-center text-sm">
-          {type=="sign-in" ? "Don't have an account? " : "Already have an account? "}
-            <Link href={type=="sign-in" ? "sign-up" : "sign-in"} className="underline underline-offset-4">
-              {type=="sign-in" ? "Sign up" : "Login"}
-            </Link>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-background px-2 text-muted-foreground">
+              Or continue with
+            </span>
           </div>
-        </form>
-      </Form>
+        </div>
+
+        <Button
+          variant="outline"
+          type="button"
+          disabled={isLoading}
+          className="w-full hover:bg-secondary"
+          onClick={() => {
+            toast.info("Google Sign In coming soon!");
+          }}
+        >
+          <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
+            <path
+              d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
+              fill="currentColor"
+            />
+          </svg>
+          Continue with Google
+        </Button>
+
+        <div className="text-center text-sm">
+          {type === "sign-in" ? (
+            <>
+              Don't have an account?{" "}
+              <Link
+                href="/sign-up"
+                className="text-primary hover:underline underline-offset-4 font-medium transition-colors"
+              >
+                Sign up
+              </Link>
+            </>
+          ) : (
+            <>
+              Already have an account?{" "}
+              <Link
+                href="/sign-in"
+                className="text-primary hover:underline underline-offset-4 font-medium transition-colors"
+              >
+                Sign in
+              </Link>
+            </>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

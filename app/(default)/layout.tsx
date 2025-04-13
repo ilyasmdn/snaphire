@@ -1,15 +1,16 @@
-import Navbar from '@/components/Navbar'
-import { ReactNode } from 'react'
+import Navbar from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 
-const RootLayout = ({children}: {children: ReactNode}) => {
+export default function DefaultLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <>
+    <div className="min-h-screen flex flex-col">
       <Navbar />
-      <main>
-        {children}
-      </main>
-    </>
-  )
+      <main className="flex-1">{children}</main>
+      <Footer />
+    </div>
+  );
 }
-
-export default RootLayout
