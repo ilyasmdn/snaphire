@@ -44,12 +44,6 @@ export const metadata: Metadata = {
       "Master your interview skills with SnapHire's AI-powered platform",
     images: ["/og-image.jpg"],
   },
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
 };
 
 export default function RootLayout({
