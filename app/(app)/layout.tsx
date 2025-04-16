@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { LogOut } from "lucide-react";
@@ -8,12 +8,23 @@ import { Button } from "@/components/ui/button";
 import { sidebarLinks } from "@/lib/constants";
 import { MobileNav } from "@/components/MobileNav";
 import { auth } from "@/firebase/client";
-import { signOut } from "firebase/auth";
+import { signOut, onAuthStateChanged } from "firebase/auth";
 import { toast } from "sonner";
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        // Redirect to sign-in if not authenticated
+        router.push(`/sign-in?redirect=${encodeURIComponent(pathname)}`);
+      }
+    });
+
+    return () => unsubscribe();
+  }, [pathname, router]);
 
   const handleLogout = async () => {
     try {
@@ -43,9 +54,9 @@ export default function AppLayout({ children }: { children: ReactNode }) {
 
         <nav className="flex-1 space-y-1 px-2 py-4">
           {sidebarLinks.map((link) => {
-            const isActive = pathname === `/app${link.href}`;
+            const isActive = pathname === link.href;
             return (
-              <Link key={link.href} href={`/app${link.href}`}>
+              <Link key={link.href} href={link.href}>
                 <span
                   className={`group flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors ${
                     isActive
