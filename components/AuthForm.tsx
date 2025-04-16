@@ -64,7 +64,7 @@ const AuthForm = ({ type }: { type: AuthFormType }) => {
   const [isLoading, setIsLoading] = useState(false);
 
   // Get the redirect URL if it exists
-  const redirectUrl = searchParams.get("redirect") || "/app/dashboard";
+  const redirectUrl = searchParams.get("redirect") || "/dashboard";
 
   const formSchema = createFormSchema(type);
   type FormSchema = z.infer<ReturnType<typeof createFormSchema>>;
