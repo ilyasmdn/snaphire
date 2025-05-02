@@ -6,29 +6,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
-
-declare global {
-  interface Window {
-    createLemonSqueezy: () => {
-      Setup: (attributes: {
-        checkout: {
-          embedUrl: string;
-          success_url: string;
-          cancel_url: string;
-        };
-        options: {
-          embed: boolean;
-          media: boolean;
-          logo: boolean;
-          desc: boolean;
-          dark: boolean;
-        };
-      }) => {
-        open: () => void;
-      };
-    };
-  }
-}
+import { auth } from "@/firebase/client";
+import { onAuthStateChanged } from "firebase/auth";
 
 type PlanId = "single" | "pack" | "basic" | "pro";
 
@@ -42,32 +21,25 @@ const VARIANTS: Record<PlanId, string> = {
 
 export default function CheckoutPage() {
   const searchParams = useSearchParams();
-  const [isLoading, setIsLoading] = useState(true);
-  const [isScriptLoaded, setIsScriptLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(false); // Set to false initially since we're not loading scripts
+  const [userEmail, setUserEmail] = useState<string | null>(null);
   const planId = searchParams.get("plan") as PlanId | null;
 
+  // Listen to auth state changes to get the user's email
   useEffect(() => {
-    // Initialize LemonSqueezy
-    const script = document.createElement("script");
-    script.src = "https://app.lemonsqueezy.com/js/checkout.js";
-    script.defer = true;
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user && user.email) {
+        setUserEmail(user.email);
+        // Also store in localStorage as a backup
+        localStorage.setItem("userEmail", user.email);
+      } else {
+        // Try to get from localStorage as fallback
+        const storedEmail = localStorage.getItem("userEmail");
+        setUserEmail(storedEmail);
+      }
+    });
 
-    script.onload = () => {
-      setIsScriptLoaded(true);
-      setIsLoading(false);
-    };
-
-    script.onerror = () => {
-      console.error("Failed to load LemonSqueezy script");
-      toast.error("Failed to load checkout. Please try again.");
-      setIsLoading(false);
-    };
-
-    document.body.appendChild(script);
-
-    return () => {
-      document.body.removeChild(script);
-    };
+    return () => unsubscribe();
   }, []);
 
   const getCheckoutTitle = () => {
@@ -121,43 +93,58 @@ export default function CheckoutPage() {
       return;
     }
 
-    if (!isScriptLoaded) {
-      toast.error("Checkout is still initializing. Please try again.");
+    const variantId = VARIANTS[planId];
+    console.log("Using variant ID:", variantId);
+
+    // First try to get email from state (which is populated from Firebase Auth)
+    const email =
+      userEmail || auth.currentUser?.email;
+
+    if (!email) {
+      toast.error("Email is missing. Please sign in or provide your email.");
       return;
     }
 
     try {
       setIsLoading(true);
-      const variantId = VARIANTS[planId];
 
-      if (!variantId) {
-        throw new Error("Invalid variant ID");
+      // Make the API call to create a checkout session
+      const response = await fetch("/api/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          variantId,
+          email,
+        }),
+      });
+
+      // Get the response data
+      const data = await response.json();
+
+      // Check if the response was successful
+      if (!response.ok) {
+        console.error("API error response:", data);
+        throw new Error(
+          data.error || data.message || "Failed to start checkout"
+        );
       }
 
-      if (typeof window.createLemonSqueezy === "undefined") {
-        throw new Error("LemonSqueezy checkout is not initialized");
+      if (!data.url) {
+        console.error("No URL in response:", data);
+        throw new Error("No checkout URL returned");
       }
 
-      window
-        .createLemonSqueezy()
-        .Setup({
-          checkout: {
-            embedUrl: `https://snaphire.lemonsqueezy.com/checkout/buy/${variantId}`,
-            success_url: `${window.location.origin}/app/dashboard`,
-            cancel_url: `${window.location.origin}/pricing`,
-          },
-          options: {
-            embed: true,
-            media: false,
-            logo: true,
-            desc: true,
-            dark: document.documentElement.classList.contains("dark"),
-          },
-        })
-        .open();
-    } catch (error) {
+      // Store email in localStorage as a backup
+      if (email) localStorage.setItem("userEmail", email);
+
+      // Redirect to the checkout URL
+      console.log("Redirecting to:", data.url);
+      window.location.href = data.url;
+    } catch (error: any) {
       console.error("Checkout error:", error);
-      toast.error("Failed to initialize checkout. Please try again.");
+      toast.error(
+        error.message || "Failed to initialize checkout. Please try again."
+      );
     } finally {
       setIsLoading(false);
     }
@@ -192,7 +179,7 @@ export default function CheckoutPage() {
               size="lg"
               className="w-full max-w-sm"
               onClick={handleCheckout}
-              disabled={isLoading || !isScriptLoaded}
+              disabled={isLoading}
             >
               {isLoading ? (
                 <>
