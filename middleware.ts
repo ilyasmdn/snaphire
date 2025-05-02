@@ -4,19 +4,21 @@ import type { NextRequest } from "next/server";
 export async function middleware(request: NextRequest) {
   const token = request.cookies.get("session")?.value;
   const pathname = request.nextUrl.pathname;
-  
+
   // Protected routes
   const protectedPaths = [
-    '/dashboard',
-    '/analytics', 
-    '/interviews',
-    '/generate-interview',
-    '/resources',
-    '/settings'
+    "/dashboard",
+    "/analytics",
+    "/interviews",
+    "/generate-interview",
+    "/resources",
+    "/settings",
   ];
 
   // Check if current path matches any protected path
-  const isProtectedRoute = protectedPaths.some(path => pathname.startsWith(path));
+  const isProtectedRoute = protectedPaths.some((path) =>
+    pathname.startsWith(path)
+  );
 
   // If it's not a protected route, continue
   if (!isProtectedRoute) {
@@ -30,22 +32,25 @@ export async function middleware(request: NextRequest) {
     }
 
     // Call the verify API endpoint
-    const verifyResponse = await fetch(new URL('/api/auth/verify', request.url), {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ sessionToken: token }),
-    });
+    const verifyResponse = await fetch(
+      new URL("/api/auth/verify", request.url),
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ sessionToken: token }),
+      }
+    );
 
     if (!verifyResponse.ok) {
-      throw new Error('Invalid session');
+      throw new Error("Invalid session");
     }
 
     const { isValid } = await verifyResponse.json();
 
     if (!isValid) {
-      throw new Error('Invalid session');
+      throw new Error("Invalid session");
     }
 
     // User is authenticated, allow access
@@ -61,12 +66,11 @@ export async function middleware(request: NextRequest) {
 // Update matcher to catch all protected routes
 export const config = {
   matcher: [
-    '/dashboard/:path*',
-    '/analytics/:path*',
-    '/interviews/:path*',
-    '/generate-interview/:path*',
-    '/resources/:path*',
-    '/settings/:path*'
-  ]
+    "/dashboard/:path*",
+    "/analytics/:path*",
+    "/interviews/:path*",
+    "/generate-interview/:path*",
+    "/resources/:path*",
+    "/settings/:path*",
+  ],
 };
-
