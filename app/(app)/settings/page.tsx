@@ -5,7 +5,15 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Bell, User, Shield, Moon, Sun, LucideIcon, CreditCard } from "lucide-react";
+import {
+  Bell,
+  User,
+  Shield,
+  Moon,
+  Sun,
+  LucideIcon,
+  CreditCard,
+} from "lucide-react";
 import { SubscriptionManagement } from "@/components/SubscriptionManagement";
 
 interface TextSetting {

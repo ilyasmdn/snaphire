@@ -49,7 +49,11 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         <aside className="hidden md:flex w-64 flex-col border-r bg-card">
           <div className="flex h-14 items-center border-b px-4">
             <Link href="/" className="flex items-center gap-2 font-semibold">
-              <img src="/snaphire.png" alt="SnapHire Logo" className="h-8 w-8" />
+              <img
+                src="/snaphire.png"
+                alt="SnapHire Logo"
+                className="h-8 w-8"
+              />
               <span>SnapHire</span>
             </Link>
           </div>
@@ -91,14 +95,20 @@ export default function AppLayout({ children }: { children: ReactNode }) {
           {/* Mobile Header */}
           <header className="h-14 border-b md:hidden flex items-center justify-between px-4">
             <Link href="/" className="flex items-center gap-2 font-semibold">
-              <img src="/snaphire.png" alt="SnapHire Logo" className="h-8 w-8" />
+              <img
+                src="/snaphire.png"
+                alt="SnapHire Logo"
+                className="h-8 w-8"
+              />
               <span>SnapHire</span>
             </Link>
             <MobileNav />
           </header>
 
           {/* Page Content */}
-          <main className="flex-1 overflow-y-auto bg-background">{children}</main>
+          <main className="flex-1 overflow-y-auto bg-background">
+            {children}
+          </main>
         </div>
       </div>
     </SubscriptionProvider>

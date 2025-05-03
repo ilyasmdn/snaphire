@@ -77,7 +77,7 @@ export function SubscriptionManagement() {
 
   const currentPlan = subscription?.plan || "free";
   const planFeatures = PLAN_FEATURES[currentPlan] || PLAN_FEATURES.free;
-  
+
   return (
     <Card className="p-6">
       <div className="space-y-6">
@@ -104,10 +104,12 @@ export function SubscriptionManagement() {
             </div>
             <div className="text-sm text-muted-foreground mt-1">
               <span className="font-semibold">{PLAN_PRICE[currentPlan]}</span>
-              {currentPlan !== "free" && currentPlan !== "teams" ? "/month" : ""}
+              {currentPlan !== "free" && currentPlan !== "teams"
+                ? "/month"
+                : ""}
             </div>
           </div>
-          
+
           <div>
             {isLoading ? (
               <Button disabled>
@@ -142,13 +144,14 @@ export function SubscriptionManagement() {
                   Started: {formatDate(subscription.createdAt)}
                 </p>
               )}
-              {subscription.updatedAt && subscription.updatedAt !== subscription.createdAt && (
-                <p className="text-sm text-muted-foreground">
-                  Last Updated: {formatDate(subscription.updatedAt)}
-                </p>
-              )}
+              {subscription.updatedAt &&
+                subscription.updatedAt !== subscription.createdAt && (
+                  <p className="text-sm text-muted-foreground">
+                    Last Updated: {formatDate(subscription.updatedAt)}
+                  </p>
+                )}
             </div>
-            
+
             <div className="flex justify-end">
               <Button variant="outline" size="sm" asChild>
                 <Link href="/settings/billing">View Billing History</Link>
@@ -163,10 +166,16 @@ export function SubscriptionManagement() {
           <ul className="space-y-3">
             {planFeatures.map((feature) => (
               <li key={feature.name} className="flex items-start">
-                <div className={`mr-3 ${feature.included ? "text-green-500" : "text-gray-300"}`}>
+                <div
+                  className={`mr-3 ${
+                    feature.included ? "text-green-500" : "text-gray-300"
+                  }`}
+                >
                   <CheckCircle2 className="h-5 w-5" />
                 </div>
-                <span className={feature.included ? "" : "text-muted-foreground"}>
+                <span
+                  className={feature.included ? "" : "text-muted-foreground"}
+                >
                   {feature.name}
                 </span>
               </li>

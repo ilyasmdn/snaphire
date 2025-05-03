@@ -1,18 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { auth } from "@/firebase/client";
 import { onAuthStateChanged } from "firebase/auth";
+import Link from "next/link";
+import { useSubscription } from "@/lib/hooks/use-subscription";
 
-// Updated to match pricing page plan names
 type PlanId = "single" | "pack" | "starter" | "pro";
 
-// Use environment variables for store and variant IDs
 const VARIANTS: Record<PlanId, string> = {
   single: process.env.NEXT_PUBLIC_LEMONSQUEEZY_SINGLE_INTERVIEW_VARIANT_ID!,
   pack: process.env.NEXT_PUBLIC_LEMONSQUEEZY_PACK_VARIANT_ID!,
@@ -20,8 +20,10 @@ const VARIANTS: Record<PlanId, string> = {
   pro: process.env.NEXT_PUBLIC_LEMONSQUEEZY_PRO_VARIANT_ID!,
 };
 
-// Pricing data from pricing page
-const PLAN_DATA: Record<PlanId, { title: string; description: string; price: string }> = {
+const PLAN_DATA: Record<
+  PlanId,
+  { title: string; description: string; price: string }
+> = {
   single: {
     title: "One-Time Interview",
     description: "Perfect for a quick mock interview experience",
@@ -45,20 +47,25 @@ const PLAN_DATA: Record<PlanId, { title: string; description: string; price: str
 };
 
 export default function CheckoutPage() {
+  const router = useRouter();
   const searchParams = useSearchParams();
-  const [isLoading, setIsLoading] = useState(false); // Set to false initially since we're not loading scripts
+  const [isLoading, setIsLoading] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const planId = searchParams.get("plan") as PlanId | null;
 
-  // Listen to auth state changes to get the user's email
+  const {
+    subscription,
+    isActive,
+    isPlan,
+    isLoading: subscriptionLoading,
+  } = useSubscription();
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user && user.email) {
         setUserEmail(user.email);
-        // Also store in localStorage as a backup
         localStorage.setItem("userEmail", user.email);
       } else {
-        // Try to get from localStorage as fallback
         const storedEmail = localStorage.getItem("userEmail");
         setUserEmail(storedEmail);
       }
@@ -67,25 +74,31 @@ export default function CheckoutPage() {
     return () => unsubscribe();
   }, []);
 
+  const isPurchasingSubscription = planId === "starter" || planId === "pro";
+  const hasActiveSubscription = isActive && isPurchasingSubscription;
+
   const getCheckoutTitle = () => {
-    return planId && PLAN_DATA[planId] 
-      ? PLAN_DATA[planId].title 
+    return planId && PLAN_DATA[planId]
+      ? PLAN_DATA[planId].title
       : "Choose a Plan";
   };
 
   const getCheckoutDescription = () => {
-    return planId && PLAN_DATA[planId] 
-      ? PLAN_DATA[planId].description 
+    return planId && PLAN_DATA[planId]
+      ? PLAN_DATA[planId].description
       : "Please select a plan from the pricing page";
   };
 
   const getPrice = () => {
-    return planId && PLAN_DATA[planId] 
-      ? PLAN_DATA[planId].price 
-      : "";
+    return planId && PLAN_DATA[planId] ? PLAN_DATA[planId].price : "";
   };
 
   const handleCheckout = async () => {
+    if (hasActiveSubscription) {
+      toast.error("You already have an active subscription");
+      return;
+    }
+
     if (!planId || !VARIANTS[planId]) {
       toast.error("Please select a valid plan");
       return;
@@ -94,9 +107,7 @@ export default function CheckoutPage() {
     const variantId = VARIANTS[planId];
     console.log("Using variant ID:", variantId);
 
-    // First try to get email from state (which is populated from Firebase Auth)
-    const email =
-      userEmail || auth.currentUser?.email;
+    const email = userEmail || auth.currentUser?.email;
 
     if (!email) {
       toast.error("Email is missing. Please sign in or provide your email.");
@@ -106,7 +117,6 @@ export default function CheckoutPage() {
     try {
       setIsLoading(true);
 
-      // Make the API call to create a checkout session
       const response = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -116,10 +126,8 @@ export default function CheckoutPage() {
         }),
       });
 
-      // Get the response data
       const data = await response.json();
 
-      // Check if the response was successful
       if (!response.ok) {
         console.error("API error response:", data);
         throw new Error(
@@ -132,10 +140,8 @@ export default function CheckoutPage() {
         throw new Error("No checkout URL returned");
       }
 
-      // Store email in localStorage as a backup
       if (email) localStorage.setItem("userEmail", email);
 
-      // Redirect to the checkout URL
       console.log("Redirecting to:", data.url);
       window.location.href = data.url;
     } catch (error: any) {
@@ -147,6 +153,45 @@ export default function CheckoutPage() {
       setIsLoading(false);
     }
   };
+
+  if (subscriptionLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin mb-4" />
+        <p>Loading subscription information...</p>
+      </div>
+    );
+  }
+
+  if (hasActiveSubscription) {
+    return (
+      <div className="container max-w-2xl mx-auto py-16 px-4">
+        <Card className="p-8">
+          <div className="space-y-8">
+            <div className="flex flex-col items-center text-center">
+              <AlertCircle className="h-16 w-16 text-amber-500 mb-4" />
+              <h1 className="text-3xl font-bold mb-2">
+                Subscription Already Active
+              </h1>
+              <p className="text-muted-foreground">
+                You already have an active <strong>{subscription?.plan}</strong>{" "}
+                subscription.
+              </p>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <Button asChild>
+                <Link href="/settings">Manage Subscription</Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href="/pricing">View Plans</Link>
+              </Button>
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   if (!planId || !VARIANTS[planId]) {
     return (
