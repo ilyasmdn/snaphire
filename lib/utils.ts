@@ -4,3 +4,29 @@ import { twMerge } from "tailwind-merge"
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
+
+/**
+ * Format a date string into a readable format
+ * @param dateString ISO date string
+ * @param options Intl.DateTimeFormatOptions
+ * @returns Formatted date string
+ */
+export function formatDate(
+  dateString: string, 
+  options: Intl.DateTimeFormatOptions = { 
+    year: 'numeric', 
+    month: 'short', 
+    day: 'numeric' 
+  }
+): string {
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      return 'Invalid date';
+    }
+    return new Intl.DateTimeFormat('en-US', options).format(date);
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return dateString;
+  }
+}

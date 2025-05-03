@@ -9,14 +9,39 @@ import { toast } from "sonner";
 import { auth } from "@/firebase/client";
 import { onAuthStateChanged } from "firebase/auth";
 
-type PlanId = "single" | "pack" | "basic" | "pro";
+// Updated to match pricing page plan names
+type PlanId = "single" | "pack" | "starter" | "pro";
 
 // Use environment variables for store and variant IDs
 const VARIANTS: Record<PlanId, string> = {
   single: process.env.NEXT_PUBLIC_LEMONSQUEEZY_SINGLE_INTERVIEW_VARIANT_ID!,
   pack: process.env.NEXT_PUBLIC_LEMONSQUEEZY_PACK_VARIANT_ID!,
-  basic: process.env.NEXT_PUBLIC_LEMONSQUEEZY_BASIC_VARIANT_ID!,
+  starter: process.env.NEXT_PUBLIC_LEMONSQUEEZY_STARTER_VARIANT_ID!,
   pro: process.env.NEXT_PUBLIC_LEMONSQUEEZY_PRO_VARIANT_ID!,
+};
+
+// Pricing data from pricing page
+const PLAN_DATA: Record<PlanId, { title: string; description: string; price: string }> = {
+  single: {
+    title: "One-Time Interview",
+    description: "Perfect for a quick mock interview experience",
+    price: "$5",
+  },
+  pack: {
+    title: "5-Interview Pack",
+    description: "Best value for focused preparation",
+    price: "$20",
+  },
+  starter: {
+    title: "Starter Subscription",
+    description: "For students or job seekers just starting out",
+    price: "$12/month",
+  },
+  pro: {
+    title: "Pro Subscription",
+    description: "For active job seekers needing advanced prep",
+    price: "$24/month",
+  },
 };
 
 export default function CheckoutPage() {
@@ -43,48 +68,21 @@ export default function CheckoutPage() {
   }, []);
 
   const getCheckoutTitle = () => {
-    switch (planId) {
-      case "single":
-        return "Single Interview";
-      case "pack":
-        return "Interview Pack (5 Interviews)";
-      case "basic":
-        return "Basic Monthly Subscription";
-      case "pro":
-        return "Pro Monthly Subscription";
-      default:
-        return "Choose a Plan";
-    }
+    return planId && PLAN_DATA[planId] 
+      ? PLAN_DATA[planId].title 
+      : "Choose a Plan";
   };
 
   const getCheckoutDescription = () => {
-    switch (planId) {
-      case "single":
-        return "One complete AI-powered interview with detailed feedback";
-      case "pack":
-        return "5 AI-powered interviews with analytics and recordings";
-      case "basic":
-        return "10 interviews per month with basic features";
-      case "pro":
-        return "Unlimited interviews with all premium features";
-      default:
-        return "Please select a plan from the pricing page";
-    }
+    return planId && PLAN_DATA[planId] 
+      ? PLAN_DATA[planId].description 
+      : "Please select a plan from the pricing page";
   };
 
   const getPrice = () => {
-    switch (planId) {
-      case "single":
-        return "$9";
-      case "pack":
-        return "$39";
-      case "basic":
-        return "$15/month";
-      case "pro":
-        return "$29/month";
-      default:
-        return "";
-    }
+    return planId && PLAN_DATA[planId] 
+      ? PLAN_DATA[planId].price 
+      : "";
   };
 
   const handleCheckout = async () => {

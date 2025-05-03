@@ -64,7 +64,6 @@ const payPerInterviewTiers = [
     features: [
       "1 full AI-powered interview",
       "Basic performance report",
-      // "Recording access",
       "Valid for 30 days",
     ],
     cta: "Purchase Now",
@@ -79,7 +78,6 @@ const payPerInterviewTiers = [
       "5 AI-powered interviews",
       "Advanced performance analytics",
       "Advanced feedback reports",
-      // "Interview recordings",
       "Valid for 90 days",
     ],
     cta: "Get Started",
