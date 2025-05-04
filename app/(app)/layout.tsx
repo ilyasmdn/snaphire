@@ -1,6 +1,6 @@
 "use client";
 
-import { ReactNode, useEffect } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import { LogOut } from "lucide-react";
@@ -8,18 +8,26 @@ import { Button } from "@/components/ui/button";
 import { sidebarLinks } from "@/lib/constants";
 import { MobileNav } from "@/components/MobileNav";
 import { auth } from "@/firebase/client";
-import { signOut, onAuthStateChanged } from "firebase/auth";
+import { signOut, onAuthStateChanged, User } from "firebase/auth";
 import { toast } from "sonner";
 import { SubscriptionProvider } from "@/components/providers/SubscriptionProvider";
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
+      console.log("Auth state changed:", user ? "user exists" : "no user");
+
+      setCurrentUser(user);
+      setIsAuthChecking(false);
+
       if (!user) {
         // Redirect to sign-in if not authenticated
+        console.log(`Redirecting to sign-in from AppLayout, path: ${pathname}`);
         router.push(`/sign-in?redirect=${encodeURIComponent(pathname)}`);
       }
     });
@@ -41,6 +49,21 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       toast.error("Failed to sign out");
     }
   };
+
+  // Show loading state while checking authentication
+  if (isAuthChecking) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // If auth check completed and we have no user, don't render anything
+  // as we should be redirecting to sign-in
+  if (!currentUser) {
+    return null;
+  }
 
   return (
     <SubscriptionProvider>

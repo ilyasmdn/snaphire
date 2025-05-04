@@ -10,9 +10,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify the session cookie
-    await auth.verifySessionCookie(sessionToken, true);
-    
-    return NextResponse.json({ isValid: true });
+    const decodedClaims = await auth.verifySessionCookie(sessionToken, true);
+    const userId = decodedClaims.uid;
+
+    return NextResponse.json({ isValid: true, userId });
   } catch (error) {
     console.error("Token verification error:", error);
     return NextResponse.json({ isValid: false }, { status: 401 });

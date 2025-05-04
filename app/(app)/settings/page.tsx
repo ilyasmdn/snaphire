@@ -128,11 +128,6 @@ export default function SettingsPage() {
       </div>
 
       <div className="space-y-6">
-        {/* Subscription Section */}
-        <div className="flex items-center gap-2">
-          <CreditCard className="h-5 w-5" />
-          <h2 className="text-xl font-semibold">Subscription</h2>
-        </div>
         <SubscriptionManagement />
 
         {/* Theme Toggle */}

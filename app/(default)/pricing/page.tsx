@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Check, HelpCircle, CreditCard, Wallet } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 
 const subscriptionTiers = [
   {
@@ -87,7 +88,16 @@ const payPerInterviewTiers = [
 ];
 
 export default function PricingPage() {
+  const searchParams = useSearchParams();
   const [showSubscription, setShowSubscription] = useState(true);
+
+  // Handle tab parameter from URL
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab === "pay-per-interview") {
+      setShowSubscription(false);
+    }
+  }, [searchParams]);
 
   return (
     <div className="container mx-auto px-4 py-16 sm:px-6 lg:px-8">

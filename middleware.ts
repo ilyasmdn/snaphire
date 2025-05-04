@@ -5,6 +5,9 @@ export async function middleware(request: NextRequest) {
   const token = request.cookies.get("session")?.value;
   const pathname = request.nextUrl.pathname;
 
+  console.log(`Middleware processing path: ${pathname}`);
+  console.log(`Session token exists: ${!!token}`);
+
   // Protected routes (require authentication)
   const protectedPaths = [
     "/dashboard",
@@ -16,7 +19,7 @@ export async function middleware(request: NextRequest) {
   ];
 
   // Premium routes mapped to subscription tiers from pricing page
-  // Dashboard is now excluded from premium routes to allow free access
+  // Dashboard and settings are now excluded from premium routes to allow free access
   const premiumRoutes = {
     // "Starter" tier from pricing page
     starter: [
@@ -37,6 +40,8 @@ export async function middleware(request: NextRequest) {
     pathname.startsWith(path)
   );
 
+  console.log(`Is protected route: ${isProtectedRoute}`);
+
   // If it's not a protected route, continue
   if (!isProtectedRoute) {
     return NextResponse.next();
@@ -45,6 +50,7 @@ export async function middleware(request: NextRequest) {
   try {
     // Verify the session token
     if (!token) {
+      console.log("No session token, redirecting to sign-in");
       throw new Error("No session token");
     }
 
@@ -60,18 +66,24 @@ export async function middleware(request: NextRequest) {
       }
     );
 
+    console.log(`Verify response status: ${verifyResponse.status}`);
+
     if (!verifyResponse.ok) {
+      console.log("Verify response not OK, redirecting to sign-in");
       throw new Error("Invalid session");
     }
 
     const { isValid, userId } = await verifyResponse.json();
+    console.log(`Session valid: ${isValid}, userId: ${userId}`);
 
     if (!isValid) {
+      console.log("Session not valid, redirecting to sign-in");
       throw new Error("Invalid session");
     }
 
     // User is authenticated, now check subscription for premium routes
     const requiresSubscription = isPremiumRoute(pathname, premiumRoutes);
+    console.log(`Requires subscription: ${requiresSubscription}`);
 
     if (requiresSubscription) {
       // Get user's subscription
@@ -79,20 +91,39 @@ export async function middleware(request: NextRequest) {
         new URL("/api/user/subscription", request.url)
       );
 
+      console.log(
+        `Subscription response status: ${subscriptionResponse.status}`
+      );
+
       if (!subscriptionResponse.ok) {
+        console.log("Subscription check failed, redirecting to pricing");
         // Redirect to pricing page if subscription check fails
         return NextResponse.redirect(new URL("/pricing", request.url));
       }
 
       const { subscription } = await subscriptionResponse.json();
+      console.log(
+        `Subscription active: ${subscription?.active}, plan: ${subscription?.plan}`
+      );
 
       if (!subscription?.active) {
+        console.log("No active subscription, redirecting to pricing");
         // Redirect to pricing page if no active subscription
         return NextResponse.redirect(new URL("/pricing", request.url));
       }
 
       // Check if user has access to this route based on their plan
-      if (!hasAccessToRoute(pathname, subscription.plan, premiumRoutes)) {
+      const hasAccess = hasAccessToRoute(
+        pathname,
+        subscription.plan,
+        premiumRoutes
+      );
+      console.log(`Has access to route: ${hasAccess}`);
+
+      if (!hasAccess) {
+        console.log(
+          "Insufficient subscription level, redirecting to pricing with upgrade=true"
+        );
         // Redirect to pricing page for upgrade
         return NextResponse.redirect(
           new URL("/pricing?upgrade=true", request.url)
@@ -100,9 +131,11 @@ export async function middleware(request: NextRequest) {
       }
     }
 
+    console.log("Authentication successful, proceeding");
     // User is authenticated and has appropriate subscription, allow access
     return NextResponse.next();
   } catch (error) {
+    console.error("Middleware error:", error);
     // Redirect to sign-in page
     const redirectUrl = new URL("/sign-in", request.url);
     redirectUrl.searchParams.set("redirect", pathname);
