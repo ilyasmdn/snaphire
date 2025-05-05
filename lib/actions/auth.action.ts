@@ -35,13 +35,14 @@ export async function signUp(params: SignUpParams) {
       updatedAt: new Date().toISOString(),
     });
 
-    // Get the ID token for automatic login
-    const idToken = await auth.createCustomToken(uid);
-    await setSessionCookie(idToken);
+    // Note: We can't automatically set the session cookie in server action after signup
+    // because we need an ID token, not a custom token
+    // The client should handle setting the session after successful signup
 
     return {
       success: true,
-      message: "Account created and signed in successfully",
+      message: "Account created successfully",
+      uid, // Return the UID so the client can use it if needed
     };
   } catch (error: any) {
     console.error("Error signing up:", error);

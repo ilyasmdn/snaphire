@@ -24,8 +24,18 @@ export async function GET(req: NextRequest) {
       // Get user data from Firestore
       const userDoc = await db.collection("users").doc(userId).get();
 
+      // Instead of returning a 404 error, return a default subscription for users not found
+      // This prevents the "Not Found" error in the frontend
       if (!userDoc.exists) {
-        return NextResponse.json({ error: "User not found" }, { status: 404 });
+        console.warn(
+          `User document not found for ID: ${userId}. Providing default subscription.`
+        );
+        return NextResponse.json({
+          subscription: {
+            active: false,
+            plan: "free",
+          },
+        });
       }
 
       const userData = userDoc.data();

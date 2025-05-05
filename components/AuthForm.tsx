@@ -86,6 +86,7 @@ const AuthForm = ({ type }: { type: AuthFormType }) => {
         const name = (values as { name: string }).name;
 
         try {
+          // First create the user in Firebase Authentication
           const userCredentials = await createUserWithEmailAndPassword(
             auth,
             email,
@@ -93,6 +94,7 @@ const AuthForm = ({ type }: { type: AuthFormType }) => {
           );
           const idToken = await userCredentials.user.getIdToken();
 
+          // Call our server action to create the user in our database
           const result = await signUp({
             uid: userCredentials.user.uid,
             email,
@@ -105,7 +107,20 @@ const AuthForm = ({ type }: { type: AuthFormType }) => {
             return;
           }
 
-          toast.success(result.message || "Account created successfully!");
+          // Now sign in the user by setting the session cookie
+          const signInResult = await signIn({
+            email,
+            idToken,
+          });
+
+          if (!signInResult?.success) {
+            toast.error(
+              signInResult?.error || "Account created but failed to sign in"
+            );
+            return;
+          }
+
+          toast.success("Account created successfully!");
           router.push(redirectUrl);
         } catch (error: any) {
           console.error("Signup error:", error);
@@ -192,6 +207,7 @@ const AuthForm = ({ type }: { type: AuthFormType }) => {
       }
 
       if (type === "sign-up") {
+        // First create or update user in our database
         const result = await signUp({
           uid: userCredential.user.uid,
           email: userCredential.user.email!,
@@ -204,8 +220,22 @@ const AuthForm = ({ type }: { type: AuthFormType }) => {
           return;
         }
 
-        toast.success(result.message || "Account created successfully!");
+        // Then set the session cookie
+        const signInResult = await signIn({
+          email: userCredential.user.email!,
+          idToken,
+        });
+
+        if (!signInResult?.success) {
+          toast.error(
+            signInResult?.error || "Account created but failed to sign in"
+          );
+          return;
+        }
+
+        toast.success("Account created and signed in successfully!");
       } else {
+        // Just sign in with the Google ID token
         const result = await signIn({
           email: userCredential.user.email!,
           idToken,
