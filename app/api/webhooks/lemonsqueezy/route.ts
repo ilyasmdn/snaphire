@@ -306,13 +306,22 @@ async function handleSubscriptionPaymentFailed(payload: WebhookPayload) {
 
 // Get the plan name from the variant ID
 function getPlanFromVariantId(variantId: number): string {
-  // Map variant IDs to plan names - you'll need to update these with your actual variant IDs
-  const planMap: Record<number, string> = {
-    // Example: Replace these with your actual variant IDs from Lemon Squeezy
-    1234: "basic",
-    5678: "pro",
-    9012: "enterprise",
+  // Get variant IDs from environment variables
+  const starterVariantId =
+    process.env.NEXT_PUBLIC_LEMONSQUEEZY_STARTER_VARIANT_ID;
+  const proVariantId = process.env.NEXT_PUBLIC_LEMONSQUEEZY_PRO_VARIANT_ID;
+  const singleVariantId =
+    process.env.NEXT_PUBLIC_LEMONSQUEEZY_SINGLE_INTERVIEW_VARIANT_ID;
+  const packVariantId = process.env.NEXT_PUBLIC_LEMONSQUEEZY_PACK_VARIANT_ID;
+
+  // Convert environment variable strings to numbers for comparison
+  const planMap: Record<string, string> = {
+    [starterVariantId || ""]: "starter",
+    [proVariantId || ""]: "pro",
+    [singleVariantId || ""]: "single",
+    [packVariantId || ""]: "pack",
   };
 
-  return planMap[variantId] || "unknown";
+  // Convert the incoming variantId to a string for comparison with env vars
+  return planMap[variantId.toString()] || "unknown";
 }
