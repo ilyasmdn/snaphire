@@ -19,6 +19,16 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+
+    if (savedTheme === "dark") {
+      document.body.classList.add("dark");
+    } else {
+      document.body.classList.remove("dark");
+    }
+  }, []);
+
+  useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       console.log("Auth state changed:", user ? "user exists" : "no user");
 
