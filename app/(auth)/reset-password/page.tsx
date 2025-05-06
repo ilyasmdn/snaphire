@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { confirmPasswordReset, verifyPasswordResetCode } from "firebase/auth";
 import { auth } from "@/firebase/client";
@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Loader2, Eye, EyeOff } from "lucide-react";
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const oobCode = searchParams.get("oobCode");
@@ -74,11 +74,15 @@ export default function ResetPasswordPage() {
 
   return (
     <div className="w-full max-w-md mx-auto my-6 p-6 bg-card border rounded-xl shadow">
-      <h1 className="text-2xl font-bold mb-4 text-center">Reset Your Password</h1>
+      <h1 className="text-2xl font-bold mb-4 text-center">
+        Reset Your Password
+      </h1>
 
       {/* New Password */}
       <div className="relative mb-4">
-        <label htmlFor="new-password" className="sr-only">New Password</label>
+        <label htmlFor="new-password" className="sr-only">
+          New Password
+        </label>
         <Input
           id="new-password"
           type={showPassword ? "text" : "password"}
@@ -88,7 +92,7 @@ export default function ResetPasswordPage() {
         />
         <button
           type="button"
-          onClick={() => setShowPassword(prev => !prev)}
+          onClick={() => setShowPassword((prev) => !prev)}
           className="absolute right-3 top-2.5 text-muted-foreground"
           aria-label={showPassword ? "Hide password" : "Show password"}
         >
@@ -98,7 +102,9 @@ export default function ResetPasswordPage() {
 
       {/* Confirm Password */}
       <div className="relative mb-4">
-        <label htmlFor="confirm-password" className="sr-only">Confirm Password</label>
+        <label htmlFor="confirm-password" className="sr-only">
+          Confirm Password
+        </label>
         <Input
           id="confirm-password"
           type={showPassword ? "text" : "password"}
@@ -113,8 +119,27 @@ export default function ResetPasswordPage() {
         className="w-full"
         disabled={loading || !newPassword || !confirmPassword}
       >
-        {loading ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : "Reset Password"}
+        {loading ? (
+          <Loader2 className="animate-spin h-4 w-4 mr-2" />
+        ) : (
+          "Reset Password"
+        )}
       </Button>
     </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="w-full max-w-md mx-auto my-6 text-center">
+          <Loader2 className="animate-spin inline-block mr-2" />
+          Loading...
+        </div>
+      }
+    >
+      <ResetPasswordForm />
+    </Suspense>
   );
 }

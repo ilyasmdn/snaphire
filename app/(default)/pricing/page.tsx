@@ -2,9 +2,9 @@
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Check, HelpCircle, CreditCard, Wallet } from "lucide-react";
+import { Check, HelpCircle, CreditCard, Wallet, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 
 const subscriptionTiers = [
@@ -32,7 +32,6 @@ const subscriptionTiers = [
       "Advanced feedback reports",
       "Custom interview scenarios",
       "Access to extra learning resources",
-      // "Interview recording & playback",
       "Priority email support",
     ],
     cta: "Start Free Trial",
@@ -87,7 +86,7 @@ const payPerInterviewTiers = [
   },
 ];
 
-export default function PricingPage() {
+function PricingContent() {
   const searchParams = useSearchParams();
   const [showSubscription, setShowSubscription] = useState(true);
 
@@ -255,5 +254,19 @@ export default function PricingPage() {
         </Button>
       </div>
     </div>
+  );
+}
+
+export default function PricingPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="container mx-auto px-4 py-16 sm:px-6 lg:px-8 flex justify-center">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
+      }
+    >
+      <PricingContent />
+    </Suspense>
   );
 }

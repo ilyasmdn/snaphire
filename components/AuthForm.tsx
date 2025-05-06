@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -58,7 +58,7 @@ const createFormSchema = (type: AuthFormType) => {
   return z.object(baseSchema);
 };
 
-const AuthForm = ({ type }: { type: AuthFormType }) => {
+function AuthFormContent({ type }: { type: AuthFormType }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
@@ -433,6 +433,22 @@ const AuthForm = ({ type }: { type: AuthFormType }) => {
         </div>
       </div>
     </div>
+  );
+}
+
+const AuthForm = ({ type }: { type: AuthFormType }) => {
+  return (
+    <Suspense
+      fallback={
+        <div className="w-full max-w-md mx-auto my-4 md:my-6">
+          <div className="bg-card text-card-foreground rounded-xl border shadow-sm p-8 space-y-8 animate-in slide-in-from-bottom-4 duration-1000 fade-in-0 flex justify-center">
+            <Loader2 className="h-6 w-6 animate-spin" />
+          </div>
+        </div>
+      }
+    >
+      <AuthFormContent type={type} />
+    </Suspense>
   );
 };
 
