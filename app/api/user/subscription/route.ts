@@ -9,6 +9,8 @@ export async function GET(req: NextRequest) {
     const cookieStore = await cookies();
     const sessionCookie = cookieStore.get("session")?.value;
 
+    console.log("Session cookie exists:", !!sessionCookie);
+    
     if (!sessionCookie) {
       return NextResponse.json(
         { error: "Unauthorized: No session cookie" },
@@ -16,10 +18,12 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Verify session cookie
+    // Verify session cookie - using false for checkRevoked to be less strict
     try {
-      const decodedClaims = await auth.verifySessionCookie(sessionCookie);
+      const decodedClaims = await auth.verifySessionCookie(sessionCookie, false);
       const userId = decodedClaims.uid;
+      
+      console.log("Session verified successfully for user:", userId);
 
       // Get user data from Firestore
       const userDoc = await db.collection("users").doc(userId).get();
@@ -49,6 +53,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ subscription: subscriptionData });
     } catch (error) {
       console.error("Session verification failed:", error);
+      console.error("Session cookie value:", sessionCookie);
       return NextResponse.json(
         { error: "Unauthorized: Invalid session" },
         { status: 401 }

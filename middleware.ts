@@ -86,9 +86,14 @@ export async function middleware(request: NextRequest) {
     console.log(`Requires subscription: ${requiresSubscription}`);
 
     if (requiresSubscription) {
-      // Get user's subscription
+      // Get user's subscription - explicitly adding the session cookie to the request
       const subscriptionResponse = await fetch(
-        new URL("/api/user/subscription", request.url)
+        new URL("/api/user/subscription", request.url),
+        {
+          headers: {
+            Cookie: `session=${token}`,
+          },
+        }
       );
 
       console.log(
