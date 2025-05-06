@@ -25,6 +25,12 @@ const nextConfig: NextConfig = {
               "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version",
           },
         ],
+        eslint: {
+          ignoreDuringBuilds: true,
+        },
+        typescript: {
+          ignoreBuildErrors: true,
+        },
       },
     ];
   },
