@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Roboto } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/react"
 
 const roboto = Roboto({
   weight: ["400", "500", "700"],
@@ -58,6 +59,7 @@ export default function RootLayout({
         {children}
         <Toaster position="top-center" richColors />
       </body>
+      <Analytics/>
     </html>
   );
 }
