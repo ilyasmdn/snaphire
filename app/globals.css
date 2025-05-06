@@ -36,6 +36,8 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --font-sans: "Roboto", system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 .dark {
@@ -117,15 +119,15 @@
   --color-secondary: #66b2ff;
   --color-accent: #6738b7;
 
-  --text-sm: 0.750rem;
+  --text-sm: 0.75rem;
   --text-base: 1rem;
   --text-xl: 1.333rem;
   --text-2xl: 1.777rem;
   --text-3xl: 2.369rem;
   --text-4xl: 3.158rem;
-  --text-5xl: 4.210rem;
+  --text-5xl: 4.21rem;
 }
-  
+
 .dark {
   --color-text: #e5eef7;
   --color-background: #09141d;
@@ -143,6 +145,10 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+    font-family: var(--font-sans);
+  }
+  html {
+    font-family: var(--font-sans);
   }
 }

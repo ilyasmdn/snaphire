@@ -4,8 +4,9 @@ import "./globals.css";
 import { Toaster } from "sonner";
 
 const roboto = Roboto({
-  variable: "--font-roboto",
+  weight: ["400", "500", "700"],
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -52,8 +53,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${roboto.className} bg-background antialiased`}>
+    <html lang="en" className={roboto.className}>
+      <body className="bg-background antialiased">
         {children}
         <Toaster position="top-center" richColors />
       </body>
