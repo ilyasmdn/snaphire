@@ -4,18 +4,18 @@ import { useState, useEffect, use } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  CheckCircle, 
-  Clock, 
-  FileText, 
-  ArrowLeft, 
-  Download, 
-  Star, 
-  BarChart, 
+import {
+  CheckCircle,
+  Clock,
+  FileText,
+  ArrowLeft,
+  Download,
+  Star,
+  BarChart,
   AlertCircle,
   ThumbsUp,
   ThumbsDown,
-  Lightbulb
+  Lightbulb,
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
@@ -66,41 +66,46 @@ export default function FeedbackPage({
     // Simulating loading state for design purposes
     setTimeout(() => {
       setLoading(false);
-      
+
       // Placeholder feedback data
       setFeedback({
         strengths: [
           "Excellent communication skills",
           "Strong technical knowledge",
           "Clear and structured responses",
-          "Good examples to support points"
+          "Good examples to support points",
         ],
         areasOfImprovement: [
           "Could provide more specific metrics when discussing achievements",
           "Some responses could be more concise",
-          "Consider using the STAR method more consistently"
+          "Consider using the STAR method more consistently",
         ],
         overallScore: 85,
         questionFeedback: [
           {
-            question: "Tell me about a challenging project you've worked on and how you handled it.",
+            question:
+              "Tell me about a challenging project you've worked on and how you handled it.",
             score: 90,
-            comments: "Excellent response with clear project details, challenges faced, and resolution. Good demonstration of problem-solving skills."
+            comments:
+              "Excellent response with clear project details, challenges faced, and resolution. Good demonstration of problem-solving skills.",
           },
           {
             question: "How do you handle tight deadlines?",
             score: 80,
-            comments: "Good answer showing prioritization skills, but could have included a specific example of successfully meeting a tight deadline."
+            comments:
+              "Good answer showing prioritization skills, but could have included a specific example of successfully meeting a tight deadline.",
           },
           {
             question: "What are your strengths and weaknesses?",
             score: 85,
-            comments: "Honest self-assessment with good examples of strengths. Weakness mentioned was genuine with steps to improve."
-          }
+            comments:
+              "Honest self-assessment with good examples of strengths. Weakness mentioned was genuine with steps to improve.",
+          },
         ],
-        summary: "Overall, you performed very well in this interview. Your responses were clear, structured, and demonstrated both technical expertise and soft skills. With some minor improvements in specificity and conciseness, you would make an even stronger impression."
+        summary:
+          "Overall, you performed very well in this interview. Your responses were clear, structured, and demonstrated both technical expertise and soft skills. With some minor improvements in specificity and conciseness, you would make an even stronger impression.",
       });
-      
+
       // Placeholder interview data
       setInterview({
         id: unwrappedParams.id,
@@ -110,11 +115,11 @@ export default function FeedbackPage({
         questions: [
           "Tell me about a challenging project you've worked on and how you handled it.",
           "How do you handle tight deadlines?",
-          "What are your strengths and weaknesses?"
+          "What are your strengths and weaknesses?",
         ],
         finalized: true,
         userId: "user123",
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       });
     }, 1500);
   }, [unwrappedParams.id]);
@@ -128,13 +133,17 @@ export default function FeedbackPage({
   const renderScoreStars = (score: number) => {
     const maxStars = 5;
     const filledStars = Math.round((score / 100) * maxStars);
-    
+
     return (
       <div className="flex items-center">
         {[...Array(maxStars)].map((_, i) => (
-          <Star 
-            key={i} 
-            className={`h-4 w-4 ${i < filledStars ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground'}`} 
+          <Star
+            key={i}
+            className={`h-4 w-4 ${
+              i < filledStars
+                ? "text-yellow-500 fill-yellow-500"
+                : "text-muted-foreground"
+            }`}
           />
         ))}
         <span className="ml-2 text-sm font-medium">{score}%</span>
@@ -152,14 +161,14 @@ export default function FeedbackPage({
           </div>
           <Skeleton className="h-10 w-28" />
         </div>
-        
+
         <Card className="p-6">
           <Skeleton className="h-6 w-32 mb-4" />
           <Skeleton className="h-4 w-full mb-2" />
           <Skeleton className="h-4 w-full mb-2" />
           <Skeleton className="h-4 w-3/4" />
         </Card>
-        
+
         <div className="grid md:grid-cols-2 gap-4">
           <Card className="p-6">
             <Skeleton className="h-6 w-32 mb-4" />
@@ -169,7 +178,7 @@ export default function FeedbackPage({
               <Skeleton className="h-4 w-2/3" />
             </div>
           </Card>
-          
+
           <Card className="p-6">
             <Skeleton className="h-6 w-48 mb-4" />
             <div className="space-y-2">
@@ -179,7 +188,7 @@ export default function FeedbackPage({
             </div>
           </Card>
         </div>
-        
+
         <Card className="p-6">
           <Skeleton className="h-6 w-40 mb-4" />
           <div className="space-y-6">
@@ -236,10 +245,11 @@ export default function FeedbackPage({
             <h1 className="text-3xl font-bold">Interview Feedback</h1>
           </div>
           <p className="text-muted-foreground mt-1">
-            {interview?.role} • {interview?.type} Interview • {interview?.level} Level
+            {interview?.role} • {interview?.type} Interview • {interview?.level}{" "}
+            Level
           </p>
         </div>
-        
+
         <Button onClick={handleDownload} className="flex items-center gap-2">
           <Download className="h-4 w-4" />
           Download Report
@@ -253,7 +263,7 @@ export default function FeedbackPage({
           Overall Summary
         </h2>
         <p className="text-muted-foreground">{feedback?.summary}</p>
-        
+
         <div className="mt-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="p-2 rounded-full bg-primary/10">
@@ -261,10 +271,12 @@ export default function FeedbackPage({
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Overall Score</p>
-              <p className="font-semibold text-2xl">{feedback?.overallScore}%</p>
+              <p className="font-semibold text-2xl">
+                {feedback?.overallScore}%
+              </p>
             </div>
           </div>
-          
+
           <div className="flex gap-2">
             {feedback && feedback.overallScore >= 80 ? (
               <div className="px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-sm font-medium flex items-center gap-1">
@@ -295,14 +307,17 @@ export default function FeedbackPage({
           </h2>
           <ul className="space-y-2">
             {feedback?.strengths.map((strength, index) => (
-              <li key={index} className="flex items-start gap-2 text-muted-foreground">
+              <li
+                key={index}
+                className="flex items-start gap-2 text-muted-foreground"
+              >
                 <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
                 <span>{strength}</span>
               </li>
             ))}
           </ul>
         </Card>
-        
+
         <Card className="p-6">
           <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
             <ThumbsDown className="h-5 w-5 text-orange-500" />
@@ -310,7 +325,10 @@ export default function FeedbackPage({
           </h2>
           <ul className="space-y-2">
             {feedback?.areasOfImprovement.map((area, index) => (
-              <li key={index} className="flex items-start gap-2 text-muted-foreground">
+              <li
+                key={index}
+                className="flex items-start gap-2 text-muted-foreground"
+              >
                 <Lightbulb className="h-4 w-4 text-orange-500 mt-0.5 flex-shrink-0" />
                 <span>{area}</span>
               </li>
@@ -325,12 +343,14 @@ export default function FeedbackPage({
           <FileText className="h-5 w-5 text-primary" />
           Question-by-Question Feedback
         </h2>
-        
+
         <div className="space-y-8">
           {feedback?.questionFeedback.map((qf, index) => (
             <div key={index} className="pb-6 border-b last:border-0 last:pb-0">
               <div className="flex justify-between items-start mb-2">
-                <h3 className="font-medium">Q{index + 1}: {qf.question}</h3>
+                <h3 className="font-medium">
+                  Q{index + 1}: {qf.question}
+                </h3>
                 {renderScoreStars(qf.score)}
               </div>
               <p className="text-muted-foreground text-sm">{qf.comments}</p>
@@ -341,16 +361,13 @@ export default function FeedbackPage({
 
       {/* Action buttons */}
       <div className="flex justify-between items-center pt-4">
-        <Button 
-          variant="outline" 
-          asChild
-        >
+        <Button variant="outline" asChild>
           <Link href="/interviews" className="flex items-center gap-2">
             <ArrowLeft className="h-4 w-4" />
             Back to Interviews
           </Link>
         </Button>
-        
+
         <Button asChild>
           <Link href="/generate-interview" className="flex items-center gap-2">
             Create New Interview
