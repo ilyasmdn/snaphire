@@ -41,7 +41,7 @@ export function InterviewCard({
           </p>
         </div>
         <Button variant="ghost" size="sm" asChild>
-          <Link href={`/interviews/${data.id}`}>Review</Link>
+          <Link href={`/interviews/${data.id}/session`}>Take The Interview</Link>
         </Button>
       </div>
     </Card>
