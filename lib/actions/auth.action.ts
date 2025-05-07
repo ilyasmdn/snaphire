@@ -1,7 +1,10 @@
 "use server";
 
 import { db, auth } from "@/firebase/admin";
+import { google } from "@ai-sdk/google";
+import { generateObject } from "ai";
 import { cookies } from "next/headers";
+import { z } from "zod";
 
 interface SignUpParams {
   uid: string;
@@ -14,6 +17,47 @@ interface SignInParams {
   email: string;
   idToken: string;
 }
+
+interface CreateFeedbackParams {
+  interviewId: string;
+  userId: string;
+  transcript: { role: string; content: string }[];
+  feedbackId?: string;
+}
+
+const feedbackSchema = z.object({
+  totalScore: z.number(),
+  categoryScores: z.tuple([
+    z.object({
+      name: z.literal("Communication Skills"),
+      score: z.number(),
+      comment: z.string(),
+    }),
+    z.object({
+      name: z.literal("Technical Knowledge"),
+      score: z.number(),
+      comment: z.string(),
+    }),
+    z.object({
+      name: z.literal("Problem Solving"),
+      score: z.number(),
+      comment: z.string(),
+    }),
+    z.object({
+      name: z.literal("Cultural Fit"),
+      score: z.number(),
+      comment: z.string(),
+    }),
+    z.object({
+      name: z.literal("Confidence and Clarity"),
+      score: z.number(),
+      comment: z.string(),
+    }),
+  ]),
+  strengths: z.array(z.string()),
+  areasForImprovement: z.array(z.string()),
+  finalAssessment: z.string(),
+});
 
 export async function signUp(params: SignUpParams) {
   const { uid, email, name } = params;
@@ -34,10 +78,6 @@ export async function signUp(params: SignUpParams) {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     });
-
-    // Note: We can't automatically set the session cookie in server action after signup
-    // because we need an ID token, not a custom token
-    // The client should handle setting the session after successful signup
 
     return {
       success: true,
@@ -155,5 +195,58 @@ export async function getCurrentUser() {
   } catch (error) {
     console.error("Error verifying session cookie:", error);
     return null;
+  }
+}
+
+export async function createFeedback(params: CreateFeedbackParams) {
+  const { interviewId, userId, transcript } = params;
+  try {
+    const formattedTranscript = transcript.map((sentence: {role: string; content: string;}) => (
+      `- ${sentence.role}: ${sentence.content}\n`
+    )).join("");
+
+    const { object : { totalScore, categoryScores, strengths, areasForImprovement, finalAssessment} } = await generateObject({
+      model: google("gemini-2.0-flash-001", {
+        structuredOutputs: false,
+      }),
+      schema: feedbackSchema,
+      prompt: `
+        You are an AI interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories. Be thorough and detailed in your analysis. Don't be lenient with the candidate. If there are mistakes or areas for improvement, point them out.
+        Transcript:
+        ${formattedTranscript}
+
+        Please score the candidate from 0 to 100 in the following areas. Do not add categories other than the ones provided:
+        - **Communication Skills**: Clarity, articulation, structured responses.
+        - **Technical Knowledge**: Understanding of key concepts for the role.
+        - **Problem-Solving**: Ability to analyze problems and propose solutions.
+        - **Cultural & Role Fit**: Alignment with company values and job role.
+        - **Confidence & Clarity**: Confidence in responses, engagement, and clarity.
+        `,
+      system:
+        "You are a professional interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories",
+    })
+    
+    const feedback = await db.collection("feedback").add({
+      interviewId,
+      userId,
+      totalScore,
+      categoryScores,
+      strengths,
+      areasForImprovement,
+      finalAssessment,
+      createdAt: new Date().toISOString(),
+    })
+
+    return {
+      success: true,
+      feedbackId: feedback.id,
+    };
+
+  } catch (error) {
+    console.error("Error saving feedback:", error);
+    return {
+      success: false,
+      error: "Unable to save feedback. Please try again later.",
+    };
   }
 }
