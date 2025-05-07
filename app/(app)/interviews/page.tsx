@@ -3,56 +3,89 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { InterviewCard } from "@/components/InterviewCard";
-import { Filter, Plus } from "lucide-react";
+import { Filter, Plus, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { toast } from "sonner";
 
-const allInterviews = [
-  {
-    id: "1",
-    title: "Full Stack Developer Interview",
-    date: "2025-04-08",
-    score: 85,
-    duration: "45 mins",
-    type: "Technical",
-  },
-  {
-    id: "2",
-    title: "System Design Discussion",
-    date: "2025-04-07",
-    score: 78,
-    duration: "30 mins",
-    type: "System Design",
-  },
-  {
-    id: "3",
-    title: "Behavioral Interview",
-    date: "2025-04-05",
-    score: 92,
-    duration: "25 mins",
-    type: "Behavioral",
-  },
-  {
-    id: "4",
-    title: "Frontend Developer Interview",
-    date: "2025-04-03",
-    score: 88,
-    duration: "40 mins",
-    type: "Technical",
-  },
-];
+// Define interface for interview data with only the specified fields
+interface Interview {
+  id: string;
+  role: string;
+  type: string;
+  level: string;
+  questions: string[]; // List of strings
+  finalized: boolean;
+  userId: string;
+  createdAt: string;
+}
+
+// Format interview for display in InterviewCard component
+const formatInterview = (interview: Interview) => {
+  // Format the date to a readable string
+  const date = new Date(interview.createdAt).toLocaleDateString();
+
+  // Create a title from role and level
+  const title = `${interview.role} ${
+    interview.level ? `(${interview.level})` : ""
+  } Interview`;
+
+  // Default duration
+  const duration = "30 mins";
+
+  return {
+    id: interview.id,
+    title,
+    date,
+    duration,
+    type: interview.type,
+  };
+};
 
 export default function InterviewsPage() {
   const [selectedType, setSelectedType] = useState<string>("all");
+  const [interviews, setInterviews] = useState<Interview[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
+  useEffect(() => {
+    async function fetchInterviews() {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch("/api/user/interviews");
+        if (!response.ok) {
+          throw new Error("Failed to fetch interviews");
+        }
+        const data = await response.json();
+        setInterviews(data.interviews || []);
+      } catch (err) {
+        console.error("Error fetching interviews:", err);
+        setError("Failed to load interviews. Please try again.");
+        toast.error("Failed to load interviews");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchInterviews();
+  }, []);
+
+  // Format interviews for display
+  const formattedInterviews = interviews.map(formatInterview);
+
+  // Filter interviews by type
   const filteredInterviews =
     selectedType === "all"
-      ? allInterviews
-      : allInterviews.filter((interview) => interview.type === selectedType);
+      ? formattedInterviews
+      : formattedInterviews.filter(
+          (interview) => interview.type === selectedType
+        );
 
+  // Get unique types for filter buttons
   const types = [
     "all",
-    ...new Set(allInterviews.map((interview) => interview.type)),
+    ...new Set(interviews.map((interview) => interview.type).filter(Boolean)),
   ];
 
   return (
@@ -65,40 +98,72 @@ export default function InterviewsPage() {
           </p>
         </div>
         <Button asChild>
-          <Link href="/generate-interview" className="flex items-center gap-2">
+          <Link
+            href="/app/generate-interview"
+            className="flex items-center gap-2"
+          >
             <Plus className="h-4 w-4" />
             New Interview
           </Link>
         </Button>
       </div>
 
-      <Card className="p-4">
-        <div className="flex gap-4 items-center">
-          <Filter className="h-4 w-4 text-muted-foreground" />
-          <div className="flex gap-2">
-            {types.map((type) => (
-              <Button
-                key={type}
-                variant={selectedType === type ? "default" : "outline"}
-                size="sm"
-                onClick={() => setSelectedType(type)}
-              >
-                {type.charAt(0).toUpperCase() + type.slice(1)}
-              </Button>
-            ))}
+      {types.length > 1 && (
+        <Card className="p-4">
+          <div className="flex gap-4 items-center">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <div className="flex gap-2">
+              {types.map((type) => (
+                <Button
+                  key={type}
+                  variant={selectedType === type ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setSelectedType(type)}
+                >
+                  {type === "all" ? "All" : type}
+                </Button>
+              ))}
+            </div>
           </div>
-        </div>
-      </Card>
+        </Card>
+      )}
 
-      <div className="grid gap-4">
-        {filteredInterviews.map((interview) => (
-          <InterviewCard
-            key={interview.id}
-            variant="personal"
-            data={interview}
-          />
-        ))}
-      </div>
+      {loading ? (
+        <div className="flex justify-center items-center p-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : error ? (
+        <Card className="p-6 text-center">
+          <p className="text-red-500">{error}</p>
+          <Button
+            variant="outline"
+            onClick={() => window.location.reload()}
+            className="mt-4"
+          >
+            Try Again
+          </Button>
+        </Card>
+      ) : filteredInterviews.length === 0 ? (
+        <Card className="p-6 text-center">
+          <p className="text-muted-foreground">No interviews found.</p>
+          <p className="text-muted-foreground mt-1">
+            Create a new interview to get started.
+          </p>
+          <Button asChild className="mt-4">
+            <Link href="/app/generate-interview">New Interview</Link>
+          </Button>
+        </Card>
+      ) : (
+        <div className="grid gap-4">
+          {filteredInterviews.map((interview) => (
+            <InterviewCard
+              key={interview.id}
+              variant="personal"
+              data={interview}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
