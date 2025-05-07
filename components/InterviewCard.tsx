@@ -2,81 +2,46 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 
+// Updated to exactly match the specified data structure
+interface InterviewData {
+  id: string;
+  role: string;
+  type: string;
+  level: string;
+  questions: string[];
+  finalized: boolean;
+  userId: string;
+  createdAt: string;
+}
+
 interface InterviewCardProps {
-  variant?: "personal" | "community";
-  data: {
-    id: string;
-    date: string;
-    duration: string;
-    type: string;
-    // Personal interview specific fields
-    title?: string;
-    score?: number;
-    // Community interview specific fields
-    role?: string;
-    company?: string;
-    topics?: string[];
-  };
+  variant?: "personal";
+  data: InterviewData;
 }
 
 export function InterviewCard({
   variant = "personal",
   data,
 }: InterviewCardProps) {
-  if (variant === "personal") {
-    return (
-      <Card className="p-4 hover:border-primary transition-colors">
-        <div className="flex items-center justify-between">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <h3 className="font-medium">{data.title}</h3>
-              <div className="flex items-center gap-2 text-sm">
-                <span className="text-muted-foreground">•</span>
-                <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-                  {data.score}% Score
-                </span>
-              </div>
-            </div>
-            <p className="text-sm text-muted-foreground">
-              {data.date} • {data.duration} • {data.type}
-            </p>
-          </div>
-          <Button variant="ghost" size="sm" asChild>
-            <Link href={`/interviews/${data.id}`}>Review</Link>
-          </Button>
-        </div>
-      </Card>
-    );
-  }
+  // Format the date for display
+  const displayDate = new Date(data.createdAt).toLocaleDateString();
+
+  // Create a title from role and level
+  const title = `${data.role} ${data.level ? `(${data.level})` : ""} Interview`;
 
   return (
     <Card className="p-4 hover:border-primary transition-colors">
       <div className="flex items-center justify-between">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <h3 className="font-medium">{data.role}</h3>
-            <span className="text-sm text-muted-foreground">
-              • {data.company}
-            </span>
+            <h3 className="font-medium">{title}</h3>
           </div>
           <p className="text-sm text-muted-foreground">
-            {data.date} • {data.duration} • {data.type}
+            {displayDate} • {data.type} • {data.questions.length} questions
           </p>
-          {data.topics && (
-            <div className="flex gap-2 mt-2">
-              {data.topics.map((topic) => (
-                <span
-                  key={topic}
-                  className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary"
-                >
-                  {topic}
-                </span>
-              ))}
-            </div>
-          )}
         </div>
         <Button variant="ghost" size="sm" asChild>
-          <Link href={`/interviews/${data.id}`}>View Details</Link>
+          <Link href={`/interviews/${data.id}`}>Review</Link>
         </Button>
       </div>
     </Card>

@@ -3,14 +3,16 @@ import { db } from "@/firebase/admin";
 import { getCurrentUser } from "@/lib/actions/auth.action";
 
 interface ContextParams {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 export async function GET(request: Request, context: ContextParams) {
   try {
-    const { id } = context.params;
+    // Await the params before destructuring
+    const params = await context.params;
+    const { id } = params;
 
     // Get the current user from the session
     const user = await getCurrentUser();

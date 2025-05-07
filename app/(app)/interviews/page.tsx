@@ -20,28 +20,6 @@ interface Interview {
   createdAt: string;
 }
 
-// Format interview for display in InterviewCard component
-const formatInterview = (interview: Interview) => {
-  // Format the date to a readable string
-  const date = new Date(interview.createdAt).toLocaleDateString();
-
-  // Create a title from role and level
-  const title = `${interview.role} ${
-    interview.level ? `(${interview.level})` : ""
-  } Interview`;
-
-  // Default duration
-  const duration = "30 mins";
-
-  return {
-    id: interview.id,
-    title,
-    date,
-    duration,
-    type: interview.type,
-  };
-};
-
 export default function InterviewsPage() {
   const [selectedType, setSelectedType] = useState<string>("all");
   const [interviews, setInterviews] = useState<Interview[]>([]);
@@ -71,16 +49,11 @@ export default function InterviewsPage() {
     fetchInterviews();
   }, []);
 
-  // Format interviews for display
-  const formattedInterviews = interviews.map(formatInterview);
-
   // Filter interviews by type
   const filteredInterviews =
     selectedType === "all"
-      ? formattedInterviews
-      : formattedInterviews.filter(
-          (interview) => interview.type === selectedType
-        );
+      ? interviews
+      : interviews.filter((interview) => interview.type === selectedType);
 
   // Get unique types for filter buttons
   const types = [
@@ -98,10 +71,7 @@ export default function InterviewsPage() {
           </p>
         </div>
         <Button asChild>
-          <Link
-            href="/app/generate-interview"
-            className="flex items-center gap-2"
-          >
+          <Link href="/generate-interview" className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
             New Interview
           </Link>
@@ -150,7 +120,7 @@ export default function InterviewsPage() {
             Create a new interview to get started.
           </p>
           <Button asChild className="mt-4">
-            <Link href="/app/generate-interview">New Interview</Link>
+            <Link href="/generate-interview">New Interview</Link>
           </Button>
         </Card>
       ) : (

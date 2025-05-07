@@ -2,10 +2,10 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Clock, Star, ArrowLeft, Loader2 } from "lucide-react";
+import { Clock, ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { notFound, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, use } from "react";
 import { toast } from "sonner";
 
 // Interview data interface with only the specified fields
@@ -20,24 +20,21 @@ interface Interview {
   createdAt: string;
 }
 
-// Format the interview data for display
-const formatInterviewForDisplay = (interview: Interview) => {
-  const title = `${interview.role} ${
-    interview.level ? `(${interview.level})` : ""
-  } Interview`;
-  const date = new Date(interview.createdAt).toLocaleDateString();
-  const duration = "30 mins";
+interface PageParams {
+  id: string;
+}
 
-  return {
-    ...interview,
-    title,
-    date,
-    duration,
-  };
-};
-
-export default function InterviewPage({ params }: { params: { id: string } }) {
+export default function InterviewPage({
+  params,
+}: {
+  params: Promise<PageParams>;
+}) {
   const router = useRouter();
+
+  // Unwrap params using React.use()
+  const unwrappedParams = use(params);
+  const id = unwrappedParams.id;
+
   const [interview, setInterview] = useState<Interview | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +43,7 @@ export default function InterviewPage({ params }: { params: { id: string } }) {
     async function fetchInterview() {
       setLoading(true);
       try {
-        const response = await fetch(`/api/user/interviews/${params.id}`);
+        const response = await fetch(`/api/user/interviews/${id}`);
         if (response.status === 404) {
           return notFound();
         }
@@ -65,7 +62,7 @@ export default function InterviewPage({ params }: { params: { id: string } }) {
     }
 
     fetchInterview();
-  }, [params.id]);
+  }, [id]);
 
   if (loading) {
     return (
@@ -81,31 +78,37 @@ export default function InterviewPage({ params }: { params: { id: string } }) {
         <Card className="p-6 text-center">
           <p className="text-red-500 mb-4">{error || "Interview not found"}</p>
           <Button asChild variant="outline">
-            <Link href="/app/interviews">Back to Interviews</Link>
+            <Link href="/interviews">Back to Interviews</Link>
           </Button>
         </Card>
       </div>
     );
   }
 
-  const displayInterview = formatInterviewForDisplay(interview);
+  // Format date for display
+  const displayDate = new Date(interview.createdAt).toLocaleDateString();
+
+  // Create title from role and level
+  const title = `${interview.role} ${
+    interview.level ? `(${interview.level})` : ""
+  } Interview`;
 
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">{displayInterview.title}</h1>
+          <h1 className="text-3xl font-bold">{title}</h1>
           <div className="flex items-center gap-4 mt-2 text-muted-foreground">
             <span className="flex items-center gap-1">
               <Clock className="h-4 w-4" />
-              {displayInterview.duration}
+              30 mins
             </span>
             <span>•</span>
-            <span>{displayInterview.date}</span>
+            <span>{displayDate}</span>
             <span>•</span>
-            <span>{displayInterview.type}</span>
-            {displayInterview.finalized && (
+            <span>{interview.type}</span>
+            {interview.finalized && (
               <>
                 <span>•</span>
                 <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-800">
@@ -117,7 +120,7 @@ export default function InterviewPage({ params }: { params: { id: string } }) {
         </div>
         <div className="flex items-center gap-4">
           <Button asChild variant="outline">
-            <Link href="/app/interviews" className="flex items-center gap-2">
+            <Link href="/interviews" className="flex items-center gap-2">
               <ArrowLeft className="h-4 w-4" />
               Back to Interviews
             </Link>
@@ -130,14 +133,13 @@ export default function InterviewPage({ params }: { params: { id: string } }) {
         <div className="space-y-4">
           <Card className="p-6">
             <h2 className="text-xl font-semibold mb-4">Questions</h2>
-            {!displayInterview.questions ||
-            displayInterview.questions.length === 0 ? (
+            {!interview.questions || interview.questions.length === 0 ? (
               <p className="text-muted-foreground text-center py-4">
                 No questions available for this interview yet.
               </p>
             ) : (
               <div className="space-y-4">
-                {displayInterview.questions.map((question, index) => (
+                {interview.questions.map((question, index) => (
                   <div key={index} className="p-4 border rounded-md">
                     <h3 className="font-medium">
                       Question {index + 1}: {question}

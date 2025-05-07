@@ -12,79 +12,115 @@ import {
   Star,
   TrendingUp,
   Users,
+  Loader2,
 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { getCurrentUser } from "@/lib/actions/auth.action";
+import { toast } from "sonner";
 
-const recentInterviews = [
-  {
-    id: "1",
-    title: "Full Stack Developer Interview",
-    date: "2025-04-08",
-    score: 85,
-    duration: "45 mins",
-    type: "Technical",
-  },
-  {
-    id: "2",
-    title: "System Design Discussion",
-    date: "2025-04-07",
-    score: 78,
-    duration: "30 mins",
-    type: "System Design",
-  },
-  {
-    id: "3",
-    title: "Behavioral Interview",
-    date: "2025-04-05",
-    score: 92,
-    duration: "25 mins",
-    type: "Behavioral",
-  },
-];
+// Define interview interface with the specified fields
+interface Interview {
+  id: string;
+  role: string;
+  type: string;
+  level: string;
+  questions: string[];
+  finalized: boolean;
+  userId: string;
+  createdAt: string;
+}
 
-const communityInterviews = [
-  {
-    id: "c1",
-    role: "Senior Frontend Developer",
-    company: "Tech Company",
-    date: "2025-04-09",
-    duration: "45 mins",
-    type: "Technical",
-    topics: ["React", "System Design", "JavaScript"],
-  },
-  {
-    id: "c2",
-    role: "Full Stack Engineer",
-    company: "Startup",
-    date: "2025-04-08",
-    duration: "60 mins",
-    type: "Technical + System Design",
-    topics: ["Node.js", "Microservices", "TypeScript"],
-  },
-  {
-    id: "c3",
-    role: "Product Engineer",
-    company: "Enterprise",
-    date: "2025-04-08",
-    duration: "30 mins",
-    type: "Behavioral",
-    topics: ["Leadership", "Project Management", "Communication"],
-  },
-];
+// Define user interface to match what getCurrentUser returns
+interface User {
+  id: string;
+  name?: string;
+  email?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  [key: string]: any; // For any other fields that might be in the user document
+}
 
 export default function DashboardPage() {
+  const [interviews, setInterviews] = useState<Interview[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        // Fetch the current user
+        const userData = (await getCurrentUser()) as User | null;
+        if (userData) {
+          setUser(userData);
+        }
+
+        // Fetch interviews
+        const response = await fetch("/api/user/interviews");
+        if (!response.ok) {
+          throw new Error("Failed to fetch interviews");
+        }
+        const data = await response.json();
+        setInterviews(data.interviews || []);
+      } catch (err) {
+        console.error("Error fetching dashboard data:", err);
+        setError("Failed to load dashboard data");
+        toast.error("Failed to load dashboard data");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+  // Get recent interviews (latest 3)
+  const recentInterviews = interviews
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    )
+    .slice(0, 3);
+
+  // Calculate stats
+  const totalInterviews = interviews.length;
+  const interviewTypes = new Set(interviews.map((interview) => interview.type))
+    .size;
+
+  // Get the unique interview types
+  const uniqueTypes = [
+    ...new Set(interviews.map((interview) => interview.type)),
+  ];
+
+  // Calculate total questions across all interviews
+  const totalQuestions = interviews.reduce(
+    (sum, interview) => sum + (interview.questions?.length || 0),
+    0
+  );
+
+  if (loading) {
+    return (
+      <div className="container mx-auto p-6 flex justify-center items-center min-h-[70vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto p-6 space-y-8">
       {/* Welcome Section */}
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold">Welcome back, User!</h1>
+          <h1 className="text-3xl font-bold">
+            Welcome back, {user?.name || "User"}!
+          </h1>
           <p className="text-muted-foreground">
             Track your progress and practice for your next interview
           </p>
         </div>
         <Button asChild>
           <Link
-            href="/app/generate-interview"
+            href="/generate-interview"
             className="flex items-center gap-2"
           >
             <Plus className="h-4 w-4" />
@@ -97,34 +133,38 @@ export default function DashboardPage() {
       <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="p-4 flex flex-col">
           <p className="text-sm text-muted-foreground">Total Interviews</p>
-          <p className="text-2xl font-bold mt-2">12</p>
-          <div className="text-primary text-sm mt-2 flex items-center gap-1">
-            <TrendingUp className="h-4 w-4" />
-            +3 this week
-          </div>
+          <p className="text-2xl font-bold mt-2">{totalInterviews}</p>
+          {totalInterviews > 0 && (
+            <div className="text-primary text-sm mt-2 flex items-center gap-1">
+              <TrendingUp className="h-4 w-4" />
+              Keep practicing!
+            </div>
+          )}
         </Card>
         <Card className="p-4 flex flex-col">
-          <p className="text-sm text-muted-foreground">Average Score</p>
-          <p className="text-2xl font-bold mt-2">85%</p>
+          <p className="text-sm text-muted-foreground">Finalized Interviews</p>
+          <p className="text-2xl font-bold mt-2">
+            {interviews.filter((i) => i.finalized).length}
+          </p>
           <div className="text-primary text-sm mt-2 flex items-center gap-1">
             <BarChart className="h-4 w-4" />
-            +5% improvement
+            Track your progress
           </div>
         </Card>
         <Card className="p-4 flex flex-col">
-          <p className="text-sm text-muted-foreground">Practice Time</p>
-          <p className="text-2xl font-bold mt-2">8.5h</p>
+          <p className="text-sm text-muted-foreground">Total Questions</p>
+          <p className="text-2xl font-bold mt-2">{totalQuestions}</p>
           <div className="text-primary text-sm mt-2 flex items-center gap-1">
             <Clock className="h-4 w-4" />
-            This month
+            Practice regularly
           </div>
         </Card>
         <Card className="p-4 flex flex-col">
           <p className="text-sm text-muted-foreground">Interview Types</p>
-          <p className="text-2xl font-bold mt-2">5</p>
+          <p className="text-2xl font-bold mt-2">{interviewTypes}</p>
           <div className="text-primary text-sm mt-2 flex items-center gap-1">
             <LineChart className="h-4 w-4" />
-            Diverse practice
+            {interviewTypes > 1 ? "Diverse practice" : "Try more types"}
           </div>
         </Card>
       </div>
@@ -134,44 +174,55 @@ export default function DashboardPage() {
         <div className="flex justify-between items-center">
           <h2 className="text-xl font-semibold">Recent Interviews</h2>
           <Button variant="outline" asChild>
-            <Link href="/app/interviews">View All</Link>
+            <Link href="/interviews">View All</Link>
           </Button>
         </div>
         <div className="grid gap-4">
-          {recentInterviews.map((interview) => (
-            <InterviewCard
-              key={interview.id}
-              variant="personal"
-              data={interview}
-            />
-          ))}
+          {recentInterviews.length > 0 ? (
+            recentInterviews.map((interview) => (
+              <InterviewCard
+                key={interview.id}
+                variant="personal"
+                data={interview}
+              />
+            ))
+          ) : (
+            <Card className="p-6 text-center">
+              <p className="text-muted-foreground">No interviews yet.</p>
+              <p className="text-muted-foreground mt-1">
+                Create your first interview to get started.
+              </p>
+              <Button asChild className="mt-4">
+                <Link href="/generate-interview">New Interview</Link>
+              </Button>
+            </Card>
+          )}
         </div>
       </div>
 
-      {/* Community Interviews */}
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <div className="space-y-1">
-            <h2 className="text-xl font-semibold">Community Interviews</h2>
-            <p className="text-sm text-muted-foreground">
-              Learn from other developers' interview experiences
-            </p>
+      {/* Popular Interview Types */}
+      {uniqueTypes.length > 0 && (
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <div className="space-y-1">
+              <h2 className="text-xl font-semibold">Your Interview Types</h2>
+              <p className="text-sm text-muted-foreground">
+                Interview types you've practiced
+              </p>
+            </div>
           </div>
-          <Button variant="outline" size="sm">
-            <Users className="h-4 w-4 mr-2" />
-            View All
-          </Button>
+          <div className="flex flex-wrap gap-2">
+            {uniqueTypes.map((type) => (
+              <div
+                key={type}
+                className="px-3 py-1.5 rounded-full bg-primary/10 text-sm font-medium text-primary"
+              >
+                {type}
+              </div>
+            ))}
+          </div>
         </div>
-        <div className="grid gap-4">
-          {communityInterviews.map((interview) => (
-            <InterviewCard
-              key={interview.id}
-              variant="community"
-              data={interview}
-            />
-          ))}
-        </div>
-      </div>
+      )}
 
       {/* Quick Tips */}
       <Card className="p-6 bg-primary/5 border-primary/10">
@@ -182,9 +233,8 @@ export default function DashboardPage() {
           <div>
             <h3 className="font-semibold">Pro Tips</h3>
             <p className="text-sm text-muted-foreground mt-1">
-              Learn from the community! Browse through other developers'
-              interviews to understand different interview styles and prepare
-              better.
+              Regular practice is key! Try to complete at least 2-3 mock
+              interviews per week for the best results in your real interviews.
             </p>
           </div>
         </div>
