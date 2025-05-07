@@ -9,13 +9,14 @@ import { useRouter } from "next/navigation";
 import { notFound } from "next/navigation";
 import { vapi } from "@/lib/vapi.sdk";
 import { CreateAssistantDTO } from "@vapi-ai/web/dist/api";
+import { createFeedback } from "@/lib/actions/auth.action";
 
 interface Interview {
   id: string;
   role: string;
   type: string;
   level: string;
-  questions: string[]; // List of strings
+  questions: string[];
   finalized: boolean;
   userId: string;
   createdAt: string;
@@ -25,9 +26,66 @@ interface PageParams {
   id: string;
 }
 
+interface SavedMessage {
+  role: "user" | "assistant" | "system";
+  content: string;
+}
+
+enum MessageTypeEnum {
+  TRANSCRIPT = "transcript",
+  FUNCTION_CALL = "function-call",
+  FUNCTION_CALL_RESULT = "function-call-result",
+  ADD_MESSAGE = "add-message",
+}
+
+enum MessageRoleEnum {
+  USER = "user",
+  SYSTEM = "system",
+  ASSISTANT = "assistant",
+}
+
+enum TranscriptMessageTypeEnum {
+  PARTIAL = "partial",
+  FINAL = "final",
+}
+
+interface BaseMessage {
+  type: MessageTypeEnum;
+}
+
+interface TranscriptMessage extends BaseMessage {
+  type: MessageTypeEnum.TRANSCRIPT;
+  role: MessageRoleEnum;
+  transcriptType: TranscriptMessageTypeEnum;
+  transcript: string;
+}
+
+interface FunctionCallMessage extends BaseMessage {
+  type: MessageTypeEnum.FUNCTION_CALL;
+  functionCall: {
+    name: string;
+    parameters: unknown;
+  };
+}
+
+interface FunctionCallResultMessage extends BaseMessage {
+  type: MessageTypeEnum.FUNCTION_CALL_RESULT;
+  functionCallResult: {
+    forwardToClientEnabled?: boolean;
+    result: unknown;
+    [a: string]: unknown;
+  };
+}
+
+type Message =
+  | TranscriptMessage
+  | FunctionCallMessage
+  | FunctionCallResultMessage;
+
 export const interviewer: CreateAssistantDTO = {
   name: "Interviewer",
-  firstMessage: "Hello! Thank you for taking the time to speak with me today. I'm excited to learn more about you and your experience.",
+  firstMessage:
+    "Hello! Thank you for taking the time to speak with me today. I'm excited to learn more about you and your experience.",
   transcriber: {
     provider: "deepgram",
     model: "nova-2",
@@ -81,7 +139,7 @@ End the conversation on a polite and positive note.
     ],
   },
   clientMessages: [],
-  serverMessages: []
+  serverMessages: [],
 };
 
 export default function InterviewSessionPage({
@@ -95,6 +153,9 @@ export default function InterviewSessionPage({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [interview, setInterview] = useState<Interview | null>(null);
+  const [transcript, setTranscript] = useState<SavedMessage[]>([]);
+  const [lastMessage, setLastMessage] = useState<string>(""); // Add this to track last message
+  const [isSpeaking, setIsSpeaking] = useState(false);
   const unwrappedParams = use(params);
 
   useEffect(() => {
@@ -124,23 +185,102 @@ export default function InterviewSessionPage({
     fetchInterview();
   }, [unwrappedParams.id]);
 
+  useEffect(() => {
+    const handleCallStart = () => {
+      console.log("Call started");
+      setIsConnected(true);
+    };
+
+    const handleMessage = (message: any) => {
+      console.log("Received message:", JSON.stringify(message, null, 2)); // Log entire message object
+      
+      // Check for transcript messages (including both TRANSCRIPT type and ADD_MESSAGE type)
+      if (message.type === MessageTypeEnum.TRANSCRIPT && message.transcriptType === TranscriptMessageTypeEnum.FINAL) {
+        const newMessage = { role: message.role, content: message.transcript };
+        console.log("Adding transcript message:", newMessage);
+        
+        setTranscript(prev => [...prev, newMessage]);
+        setLastMessage(message.transcript);
+      } 
+      // Check for add-message type (some VAPI implementations use this instead)
+      else if (message.type === MessageTypeEnum.ADD_MESSAGE) {
+        const newMessage = { 
+          role: message.message.role, 
+          content: message.message.content 
+        };
+        console.log("Adding message from add-message event:", newMessage);
+        
+        setTranscript(prev => [...prev, newMessage]);
+        setLastMessage(message.message.content);
+      }
+    };
+
+    const handleCallEnd = () => {
+      console.log("Call ended naturally");
+      setIsConnected(false);
+    };
+
+    const handleError = (error: any) => {
+      console.error("VAPI error:", error);
+      toast.error(
+        "Error with the interview: " + (error?.message || "Unknown error")
+      );
+    };
+
+    const handleSpeechStart = () => {
+      console.log("speech start");
+      setIsSpeaking(true);
+    };
+
+    const handleSpeechEnd = () => {
+      console.log("speech end");
+      setIsSpeaking(false);
+    };
+
+    vapi.on("call-start", handleCallStart);
+    vapi.on("message", handleMessage);
+    vapi.on("call-end", handleCallEnd);
+    vapi.on("error", handleError);
+    vapi.on("speech-start", handleSpeechStart);
+    vapi.on("speech-end", handleSpeechEnd);
+
+    return () => {
+      vapi.off("call-start", handleCallStart);
+      vapi.off("message", handleMessage);
+      vapi.off("call-end", handleCallEnd);
+      vapi.off("error", handleError);
+      vapi.off("speech-start", handleSpeechStart);
+      vapi.off("speech-end", handleSpeechEnd);
+    };
+  }, []);
+
+  // Add this useEffect to monitor transcript changes
+  useEffect(() => {
+    console.log("Current transcript state:", transcript);
+  }, [transcript]);
+
   const handleStartCall = async () => {
     try {
       setIsConnecting(true);
-      
-      let formattedQuestions = "";
-      formattedQuestions = interview?.questions.map((question, index) => `${index + 1}. ${question}`).join("\n") || "";
 
-      await vapi.start( interviewer, {
+      // Reset transcript at the start of each call
+      setTranscript([]);
+      setLastMessage("");
+
+      let formattedQuestions = "";
+      formattedQuestions =
+        interview?.questions
+          .map((question, index) => `${index + 1}. ${question}`)
+          .join("\n") || "";
+
+      await vapi.start(interviewer, {
         variableValues: {
-          questions: formattedQuestions
+          questions: formattedQuestions,
         },
         clientMessages: [],
-        serverMessages: []
-      }
-      )
-      
-      setIsConnected(true);
+        serverMessages: [],
+      });
+
       toast.success("Connected to AI interviewer");
     } catch (error) {
       console.error("Failed to connect:", error);
@@ -153,21 +293,53 @@ export default function InterviewSessionPage({
 
   const handleEndCall = async () => {
     try {
-      // TODO: Add voice API disconnection logic here
+      const loadingToast = toast.loading("Generating feedback...");
+
+      vapi.stop();
       setIsConnected(false);
-      toast.success("Interview completed successfully");
-      // Redirect to interview results page
-      router.push(`/interviews/${unwrappedParams.id}/feedback`);
+
+      console.log("Final transcript collection:", transcript);
+      console.log("Transcript length:", transcript.length);
+
+      // Ensure we don't proceed with empty transcript
+      if (transcript.length === 0) {
+        toast.dismiss(loadingToast);
+        toast.error("Interview completed, but no transcript was recorded");
+        router.push("/interviews");
+        return;
+      }
+
+      if (interview) {
+        const result = await createFeedback({
+          interviewId: interview.id,
+          userId: interview.userId,
+          transcript: transcript,
+        });
+
+        if (result.success) {
+          toast.dismiss(loadingToast);
+          toast.success("Interview completed! Feedback generated successfully");
+
+          router.push(
+            `/interviews/${unwrappedParams.id}/feedback?feedbackId=${result.feedbackId}`
+          );
+        } else {
+          toast.dismiss(loadingToast);
+          toast.error(
+            "Interview completed, but there was an issue generating feedback"
+          );
+          router.push(`/interviews/${unwrappedParams.id}`);
+        }
+      }
     } catch (error) {
-      console.error("Failed to disconnect:", error);
-      toast.error("Failed to end interview");
+      console.error("Failed to disconnect or save feedback:", error);
+      toast.error("Failed to end interview properly");
     }
   };
 
   return (
     <div className="container mx-auto p-6 max-w-2xl">
       <div className="space-y-6">
-        {/* Header */}
         <div className="text-center space-y-2">
           <h1 className="text-3xl font-bold">Interview Session</h1>
           <p className="text-muted-foreground">
@@ -175,7 +347,6 @@ export default function InterviewSessionPage({
           </p>
         </div>
 
-        {/* Loading and Error States */}
         {loading ? (
           <Card className="p-6">
             <div className="flex flex-col items-center justify-center py-10">
@@ -222,7 +393,6 @@ export default function InterviewSessionPage({
           </Card>
         ) : (
           <>
-            {/* Call Status Card */}
             <Card className="p-6">
               <div className="flex flex-col items-center justify-center space-y-6">
                 <div
@@ -235,7 +405,15 @@ export default function InterviewSessionPage({
                   `}
                   >
                     {isConnected ? (
-                      <Mic className="h-10 w-10 text-green-500" />
+                      <div className="relative">
+                        <Mic className="h-10 w-10 text-green-500" />
+                        {isSpeaking && (
+                          <span className="absolute -top-1 -right-1 flex h-3 w-3">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
+                          </span>
+                        )}
+                      </div>
                     ) : (
                       <MicOff className="h-10 w-10 text-primary" />
                     )}
@@ -291,34 +469,38 @@ export default function InterviewSessionPage({
               </div>
             </Card>
 
-            {/* Current Question Display */}
             {isConnected && (
-              <Card className="p-6">
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="font-semibold text-sm text-muted-foreground">
-                      Current Question:
-                    </h3>
-                    <p className="text-lg mt-1">
-                      Tell me about a challenging project you've worked on and
-                      how you handled it.
-                    </p>
+              <>
+                {/* Show transcript display */}
+                {lastMessage && (
+                  <Card className="p-4 mt-4 bg-secondary/5 border-secondary/20">
+                    <div className="space-y-2">
+                      <h3 className="text-sm font-medium">Last message:</h3>
+                      <p className="text-sm text-muted-foreground">{lastMessage}</p>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Messages recorded: {transcript.length}
+                      </div>
+                    </div>
+                  </Card>
+                )}
+
+                <Card className="p-6">
+                  <div className="space-y-4">
+                    <div className="border-t pt-4">
+                      <h3 className="font-semibold text-sm text-muted-foreground mb-2">
+                        Tips:
+                      </h3>
+                      <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
+                        <li>Structure your response using the STAR method</li>
+                        <li>Include specific examples and outcomes</li>
+                        <li>Keep your answer focused and concise</li>
+                      </ul>
+                    </div>
                   </div>
-                  <div className="border-t pt-4">
-                    <h3 className="font-semibold text-sm text-muted-foreground mb-2">
-                      Tips:
-                    </h3>
-                    <ul className="text-sm text-muted-foreground list-disc list-inside space-y-1">
-                      <li>Structure your response using the STAR method</li>
-                      <li>Include specific examples and outcomes</li>
-                      <li>Keep your answer focused and concise</li>
-                    </ul>
-                  </div>
-                </div>
-              </Card>
+                </Card>
+              </>
             )}
 
-            {/* Instructions Card */}
             {!isConnected && (
               <Card className="p-6 bg-muted/50">
                 <h3 className="font-semibold mb-2">Before you begin:</h3>
