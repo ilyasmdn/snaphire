@@ -42,6 +42,7 @@ interface User {
 
 export default function DashboardPage() {
   const [interviews, setInterviews] = useState<Interview[]>([]);
+  const [completedCount, setCompletedCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
@@ -62,6 +63,22 @@ export default function DashboardPage() {
         }
         const data = await response.json();
         setInterviews(data.interviews || []);
+
+        // Check which interviews have feedback
+        const completedInterviews = await Promise.all(
+          data.interviews.map(async (interview: Interview) => {
+            try {
+              const feedbackResponse = await fetch(
+                `/api/user/interviews/${interview.id}/feedback`
+              );
+              return feedbackResponse.ok;
+            } catch {
+              return false;
+            }
+          })
+        );
+
+        setCompletedCount(completedInterviews.filter(Boolean).length);
       } catch (err) {
         console.error("Error fetching dashboard data:", err);
         setError("Failed to load dashboard data");
@@ -84,8 +101,6 @@ export default function DashboardPage() {
 
   // Calculate stats
   const totalInterviews = interviews.length;
-  const interviewTypes = new Set(interviews.map((interview) => interview.type))
-    .size;
 
   // Get the unique interview types
   const uniqueTypes = [
@@ -142,16 +157,6 @@ export default function DashboardPage() {
           )}
         </Card>
         <Card className="p-4 flex flex-col">
-          <p className="text-sm text-muted-foreground">Finalized Interviews</p>
-          <p className="text-2xl font-bold mt-2">
-            {interviews.filter((i) => i.finalized).length}
-          </p>
-          <div className="text-primary text-sm mt-2 flex items-center gap-1">
-            <BarChart className="h-4 w-4" />
-            Track your progress
-          </div>
-        </Card>
-        <Card className="p-4 flex flex-col">
           <p className="text-sm text-muted-foreground">Total Questions</p>
           <p className="text-2xl font-bold mt-2">{totalQuestions}</p>
           <div className="text-primary text-sm mt-2 flex items-center gap-1">
@@ -160,11 +165,21 @@ export default function DashboardPage() {
           </div>
         </Card>
         <Card className="p-4 flex flex-col">
-          <p className="text-sm text-muted-foreground">Interview Types</p>
-          <p className="text-2xl font-bold mt-2">{interviewTypes}</p>
+          <p className="text-sm text-muted-foreground">Completed Interviews</p>
+          <p className="text-2xl font-bold mt-2">{completedCount}</p>
           <div className="text-primary text-sm mt-2 flex items-center gap-1">
-            <LineChart className="h-4 w-4" />
-            {interviewTypes > 1 ? "Diverse practice" : "Try more types"}
+            <Star className="h-4 w-4" />
+            {completedCount > 0 ? "Keep up the good work!" : "Complete your first interview"}
+          </div>
+        </Card>
+        <Card className="p-4 flex flex-col">
+          <p className="text-sm text-muted-foreground">Completion Rate</p>
+          <p className="text-2xl font-bold mt-2">
+            {totalInterviews > 0 ? Math.round((completedCount / totalInterviews) * 100) : 0}%
+          </p>
+          <div className="text-primary text-sm mt-2 flex items-center gap-1">
+            <BarChart className="h-4 w-4" />
+            {totalInterviews > 0 ? "Of interviews completed" : "Start your journey"}
           </div>
         </Card>
       </div>
