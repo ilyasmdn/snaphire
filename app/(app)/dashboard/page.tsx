@@ -134,10 +134,7 @@ export default function DashboardPage() {
           </p>
         </div>
         <Button asChild>
-          <Link
-            href="/generate-interview"
-            className="flex items-center gap-2"
-          >
+          <Link href="/generate-interview" className="flex items-center gap-2">
             <Plus className="h-4 w-4" />
             New Interview
           </Link>
@@ -169,17 +166,24 @@ export default function DashboardPage() {
           <p className="text-2xl font-bold mt-2">{completedCount}</p>
           <div className="text-primary text-sm mt-2 flex items-center gap-1">
             <Star className="h-4 w-4" />
-            {completedCount > 0 ? "Keep up the good work!" : "Complete your first interview"}
+            {completedCount > 0
+              ? "Keep up the good work!"
+              : "Complete your first interview"}
           </div>
         </Card>
         <Card className="p-4 flex flex-col">
           <p className="text-sm text-muted-foreground">Completion Rate</p>
           <p className="text-2xl font-bold mt-2">
-            {totalInterviews > 0 ? Math.round((completedCount / totalInterviews) * 100) : 0}%
+            {totalInterviews > 0
+              ? Math.round((completedCount / totalInterviews) * 100)
+              : 0}
+            %
           </p>
           <div className="text-primary text-sm mt-2 flex items-center gap-1">
             <BarChart className="h-4 w-4" />
-            {totalInterviews > 0 ? "Of interviews completed" : "Start your journey"}
+            {totalInterviews > 0
+              ? "Of interviews completed"
+              : "Start your journey"}
           </div>
         </Card>
       </div>
