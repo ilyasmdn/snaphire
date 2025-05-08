@@ -190,9 +190,6 @@ export default function InterviewSessionPage({
   }, [unwrappedParams.id]);
 
   useEffect(() => {
-    // Debug VAPI initialization
-    console.log("VAPI SDK initialized:", vapi);
-    console.log("Setting up VAPI event listeners");
 
     const onCallStart = () => {
       console.log("Call started...");
@@ -205,12 +202,6 @@ export default function InterviewSessionPage({
     };
 
     const onMessage = (message: any) => {
-      // Add verbose debugging to track all messages
-      console.log("%c MESSAGE RECEIVED", "background: #007700; color: white; padding: 2px 6px; border-radius: 2px;", {
-        messageType: message?.type,
-        messageObj: message,
-        timestamp: new Date().toISOString()
-      });
 
       // Handle transcription messages
       if (message.type === MessageTypeEnum.TRANSCRIPT) {
@@ -220,25 +211,12 @@ export default function InterviewSessionPage({
             role: message.role,
             content: message.transcript,
           };
-          
-          // Debug log for messages state update
-          console.log("Adding message to state:", newMessage);
-          
           setMessages((prev) => {
             const updated = [...prev, newMessage];
             console.log("Updated messages array:", updated);
             return updated;
           });
-        } else {
-          console.log("Partial transcript received:", message.transcript);
         }
-      } else if (message.type === "status-update") {
-        console.log("Status update received:", message.status);
-        if (message.status === "ended") {
-          setCallStatus(CallStatus.FINISHED);
-        }
-      } else {
-        console.log("Unhandled message type:", message.type, message);
       }
     };
 
