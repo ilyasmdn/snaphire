@@ -120,12 +120,12 @@ export default function GenerateInterviewPage() {
 
     setIsInitiatingCall(true);
     try {
+
+      // @ts-ignore
       await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
         variableValues: {
           userid: userId,
-        },
-        clientMessages: [],
-        serverMessages: [],
+        }
       });
     } catch (error) {
       console.error("Failed to start Vapi call:", error);
