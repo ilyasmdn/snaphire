@@ -31,6 +31,13 @@ interface SavedMessage {
   content: string;
 }
 
+enum CallStatus {
+  INACTIVE = "INACTIVE",
+  CONNECTING = "CONNECTING",
+  ACTIVE = "ACTIVE",
+  FINISHED = "FINISHED",
+}
+
 enum MessageTypeEnum {
   TRANSCRIPT = "transcript",
   FUNCTION_CALL = "function-call",
@@ -82,10 +89,10 @@ type Message =
   | FunctionCallMessage
   | FunctionCallResultMessage;
 
+  // @ts-ignore
 export const interviewer: CreateAssistantDTO = {
   name: "Interviewer",
-  firstMessage:
-    "Hello! Thank you for taking the time to speak with me today. I'm excited to learn more about you and your experience.",
+  firstMessage: "Hello! Thank you for taking the time to speak with me today. I'm excited to learn more about you and your experience.",
   transcriber: {
     provider: "deepgram",
     model: "nova-2",
@@ -138,8 +145,6 @@ End the conversation on a polite and positive note.
       },
     ],
   },
-  clientMessages: [],
-  serverMessages: [],
 };
 
 export default function InterviewSessionPage({
@@ -148,13 +153,12 @@ export default function InterviewSessionPage({
   params: Promise<PageParams>;
 }) {
   const router = useRouter();
-  const [isConnecting, setIsConnecting] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
+  const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [interview, setInterview] = useState<Interview | null>(null);
-  const [transcript, setTranscript] = useState<SavedMessage[]>([]);
-  const [lastMessage, setLastMessage] = useState<string>(""); // Add this to track last message
+  const [messages, setMessages] = useState<SavedMessage[]>([]);
+  const [lastMessage, setLastMessage] = useState<string>("");
   const [isSpeaking, setIsSpeaking] = useState(false);
   const unwrappedParams = use(params);
 
@@ -186,155 +190,172 @@ export default function InterviewSessionPage({
   }, [unwrappedParams.id]);
 
   useEffect(() => {
-    const handleCallStart = () => {
-      console.log("Call started");
-      setIsConnected(true);
+    // Debug VAPI initialization
+    console.log("VAPI SDK initialized:", vapi);
+    console.log("Setting up VAPI event listeners");
+
+    const onCallStart = () => {
+      console.log("Call started...");
+      setCallStatus(CallStatus.ACTIVE);
     };
 
-    const handleMessage = (message: any) => {
-      console.log("Received message:", JSON.stringify(message, null, 2)); // Log entire message object
-      
-      // Check for transcript messages (including both TRANSCRIPT type and ADD_MESSAGE type)
-      if (message.type === MessageTypeEnum.TRANSCRIPT && message.transcriptType === TranscriptMessageTypeEnum.FINAL) {
-        const newMessage = { role: message.role, content: message.transcript };
-        console.log("Adding transcript message:", newMessage);
-        
-        setTranscript(prev => [...prev, newMessage]);
-        setLastMessage(message.transcript);
-      } 
-      // Check for add-message type (some VAPI implementations use this instead)
-      else if (message.type === MessageTypeEnum.ADD_MESSAGE) {
-        const newMessage = { 
-          role: message.message.role, 
-          content: message.message.content 
-        };
-        console.log("Adding message from add-message event:", newMessage);
-        
-        setTranscript(prev => [...prev, newMessage]);
-        setLastMessage(message.message.content);
+    const onCallEnd = () => {
+      console.log("Call ended");
+      setCallStatus(CallStatus.FINISHED);
+    };
+
+    const onMessage = (message: any) => {
+      // Add verbose debugging to track all messages
+      console.log("%c MESSAGE RECEIVED", "background: #007700; color: white; padding: 2px 6px; border-radius: 2px;", {
+        messageType: message?.type,
+        messageObj: message,
+        timestamp: new Date().toISOString()
+      });
+
+      // Handle transcription messages
+      if (message.type === MessageTypeEnum.TRANSCRIPT) {
+        if (message.transcriptType === TranscriptMessageTypeEnum.FINAL) {
+          console.log("Final transcript received:", message.transcript);
+          const newMessage = {
+            role: message.role,
+            content: message.transcript,
+          };
+          
+          // Debug log for messages state update
+          console.log("Adding message to state:", newMessage);
+          
+          setMessages((prev) => {
+            const updated = [...prev, newMessage];
+            console.log("Updated messages array:", updated);
+            return updated;
+          });
+        } else {
+          console.log("Partial transcript received:", message.transcript);
+        }
+      } else if (message.type === "status-update") {
+        console.log("Status update received:", message.status);
+        if (message.status === "ended") {
+          setCallStatus(CallStatus.FINISHED);
+        }
+      } else {
+        console.log("Unhandled message type:", message.type, message);
       }
     };
 
-    const handleCallEnd = () => {
-      console.log("Call ended naturally");
-      setIsConnected(false);
+    const onSpeechStart = () => {
+      console.log("speech start");
+      setIsSpeaking(true);
     };
 
-    const handleError = (error: any) => {
+    const onSpeechEnd = () => {
+      console.log("speech end");
+      setIsSpeaking(false);
+    };
+
+    const onError = (error: any) => {
       console.error("VAPI error:", error);
       toast.error(
         "Error with the interview: " + (error?.message || "Unknown error")
       );
     };
 
-    const handleSpeechStart = () => {
-      console.log("speech start");
-      setIsSpeaking(true);
-    };
-
-    const handleSpeechEnd = () => {
-      console.log("speech end");
-      setIsSpeaking(false);
-    };
-
-    vapi.on("call-start", handleCallStart);
-    vapi.on("message", handleMessage);
-    vapi.on("call-end", handleCallEnd);
-    vapi.on("error", handleError);
-    vapi.on("speech-start", handleSpeechStart);
-    vapi.on("speech-end", handleSpeechEnd);
+    // Add logging for all events to ensure they're registered
+    console.log("Registering VAPI event handlers");
+    vapi.on("call-start", onCallStart);
+    vapi.on("call-end", onCallEnd);
+    vapi.on("message", onMessage);
+    vapi.on("speech-start", onSpeechStart);
+    vapi.on("speech-end", onSpeechEnd);
+    vapi.on("error", onError);
 
     return () => {
-      vapi.off("call-start", handleCallStart);
-      vapi.off("message", handleMessage);
-      vapi.off("call-end", handleCallEnd);
-      vapi.off("error", handleError);
-      vapi.off("speech-start", handleSpeechStart);
-      vapi.off("speech-end", handleSpeechEnd);
+      vapi.off("call-start", onCallStart);
+      vapi.off("call-end", onCallEnd);
+      vapi.off("message", onMessage);
+      vapi.off("speech-start", onSpeechStart);
+      vapi.off("speech-end", onSpeechEnd);
+      vapi.off("error", onError);
     };
   }, []);
 
-  // Add this useEffect to monitor transcript changes
   useEffect(() => {
-    console.log("Current transcript state:", transcript);
-  }, [transcript]);
+    if (messages.length > 0) {
+      setLastMessage(messages[messages.length - 1].content);
+    }
+
+    const handleGenerateFeedback = async (messages: SavedMessage[]) => {
+      console.log("Generating feedback from transcript:", messages);
+
+      if (messages.length === 0 || !interview) {
+        toast.error("Interview completed, but no transcript was recorded");
+        router.push("/interviews");
+        return;
+      }
+
+      const loadingToast = toast.loading("Generating feedback...");
+
+      try {
+        const result = await createFeedback({
+          interviewId: interview.id,
+          userId: interview.userId,
+          transcript: messages,
+        });
+
+        toast.dismiss(loadingToast);
+
+        if (result.success) {
+          toast.success("Interview completed! Feedback generated successfully");
+          router.push(
+            `/interviews/${unwrappedParams.id}/feedback?feedbackId=${result.feedbackId}`
+          );
+        } else {
+          toast.error(
+            "Interview completed, but there was an issue generating feedback"
+          );
+          router.push(`/interviews/${unwrappedParams.id}`);
+        }
+      } catch (error) {
+        toast.dismiss(loadingToast);
+        console.error("Failed to generate feedback:", error);
+        toast.error("Failed to generate feedback");
+        router.push(`/interviews`);
+      }
+    };
+
+    if (callStatus === CallStatus.FINISHED) {
+      handleGenerateFeedback(messages);
+    }
+  }, [messages, callStatus, interview, router, unwrappedParams.id]);
 
   const handleStartCall = async () => {
+    setCallStatus(CallStatus.CONNECTING);
+    setMessages([]);
+
     try {
-      setIsConnecting(true);
-
-      // Reset transcript at the start of each call
-      setTranscript([]);
-      setLastMessage("");
-
       let formattedQuestions = "";
       formattedQuestions =
         interview?.questions
           .map((question, index) => `${index + 1}. ${question}`)
           .join("\n") || "";
 
+          // @ts-ignore
       await vapi.start(interviewer, {
         variableValues: {
           questions: formattedQuestions,
-        },
-        clientMessages: [],
-        serverMessages: [],
+        }
       });
 
       toast.success("Connected to AI interviewer");
     } catch (error) {
       console.error("Failed to connect:", error);
       toast.error("Failed to connect to AI interviewer");
-      setIsConnected(false);
-    } finally {
-      setIsConnecting(false);
+      setCallStatus(CallStatus.INACTIVE);
     }
   };
 
-  const handleEndCall = async () => {
-    try {
-      const loadingToast = toast.loading("Generating feedback...");
-
-      vapi.stop();
-      setIsConnected(false);
-
-      console.log("Final transcript collection:", transcript);
-      console.log("Transcript length:", transcript.length);
-
-      // Ensure we don't proceed with empty transcript
-      if (transcript.length === 0) {
-        toast.dismiss(loadingToast);
-        toast.error("Interview completed, but no transcript was recorded");
-        router.push("/interviews");
-        return;
-      }
-
-      if (interview) {
-        const result = await createFeedback({
-          interviewId: interview.id,
-          userId: interview.userId,
-          transcript: transcript,
-        });
-
-        if (result.success) {
-          toast.dismiss(loadingToast);
-          toast.success("Interview completed! Feedback generated successfully");
-
-          router.push(
-            `/interviews/${unwrappedParams.id}/feedback?feedbackId=${result.feedbackId}`
-          );
-        } else {
-          toast.dismiss(loadingToast);
-          toast.error(
-            "Interview completed, but there was an issue generating feedback"
-          );
-          router.push(`/interviews/${unwrappedParams.id}`);
-        }
-      }
-    } catch (error) {
-      console.error("Failed to disconnect or save feedback:", error);
-      toast.error("Failed to end interview properly");
-    }
+  const handleEndCall = () => {
+    setCallStatus(CallStatus.FINISHED);
+    vapi.stop();
   };
 
   return (
@@ -396,15 +417,21 @@ export default function InterviewSessionPage({
             <Card className="p-6">
               <div className="flex flex-col items-center justify-center space-y-6">
                 <div
-                  className={`relative ${isConnecting ? "animate-pulse" : ""}`}
+                  className={`relative ${
+                    callStatus === CallStatus.CONNECTING ? "animate-pulse" : ""
+                  }`}
                 >
                   <div
                     className={`
                     w-24 h-24 rounded-full flex items-center justify-center
-                    ${isConnected ? "bg-green-500/20" : "bg-primary/10"}
+                    ${
+                      callStatus === CallStatus.ACTIVE
+                        ? "bg-green-500/20"
+                        : "bg-primary/10"
+                    }
                   `}
                   >
-                    {isConnected ? (
+                    {callStatus === CallStatus.ACTIVE ? (
                       <div className="relative">
                         <Mic className="h-10 w-10 text-green-500" />
                         {isSpeaking && (
@@ -418,7 +445,7 @@ export default function InterviewSessionPage({
                       <MicOff className="h-10 w-10 text-primary" />
                     )}
                   </div>
-                  {isConnected && (
+                  {callStatus === CallStatus.ACTIVE && (
                     <div className="absolute -bottom-2 left-1/2 -translate-x-1/2">
                       <span className="inline-flex items-center rounded-full bg-green-500/10 px-2.5 py-0.5 text-xs font-medium text-green-500">
                         Connected
@@ -429,14 +456,14 @@ export default function InterviewSessionPage({
 
                 <div className="text-center space-y-2">
                   <h2 className="text-xl font-semibold">
-                    {isConnected
+                    {callStatus === CallStatus.ACTIVE
                       ? "Interview in Progress"
-                      : isConnecting
+                      : callStatus === CallStatus.CONNECTING
                       ? "Connecting..."
                       : "Ready to Start"}
                   </h2>
                   <p className="text-sm text-muted-foreground">
-                    {isConnected
+                    {callStatus === CallStatus.ACTIVE
                       ? "Speak clearly and take your time with your responses"
                       : "Click start when you're ready to begin"}
                   </p>
@@ -444,17 +471,26 @@ export default function InterviewSessionPage({
 
                 <Button
                   size="lg"
-                  variant={isConnected ? "destructive" : "default"}
+                  variant={
+                    callStatus === CallStatus.ACTIVE ? "destructive" : "default"
+                  }
                   className="w-full max-w-sm"
-                  onClick={isConnected ? handleEndCall : handleStartCall}
-                  disabled={isConnecting}
+                  onClick={
+                    callStatus === CallStatus.ACTIVE
+                      ? handleEndCall
+                      : handleStartCall
+                  }
+                  disabled={
+                    callStatus === CallStatus.CONNECTING ||
+                    callStatus === CallStatus.FINISHED
+                  }
                 >
-                  {isConnecting ? (
+                  {callStatus === CallStatus.CONNECTING ? (
                     <span className="flex items-center gap-2">
                       <Phone className="h-4 w-4 animate-pulse" />
                       Connecting...
                     </span>
-                  ) : isConnected ? (
+                  ) : callStatus === CallStatus.ACTIVE ? (
                     <span className="flex items-center gap-2">
                       <Phone className="h-4 w-4" />
                       End Interview
@@ -469,16 +505,17 @@ export default function InterviewSessionPage({
               </div>
             </Card>
 
-            {isConnected && (
+            {callStatus === CallStatus.ACTIVE && (
               <>
-                {/* Show transcript display */}
                 {lastMessage && (
                   <Card className="p-4 mt-4 bg-secondary/5 border-secondary/20">
                     <div className="space-y-2">
                       <h3 className="text-sm font-medium">Last message:</h3>
-                      <p className="text-sm text-muted-foreground">{lastMessage}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {lastMessage}
+                      </p>
                       <div className="text-xs text-muted-foreground mt-1">
-                        Messages recorded: {transcript.length}
+                        Messages recorded: {messages.length}
                       </div>
                     </div>
                   </Card>
@@ -501,18 +538,19 @@ export default function InterviewSessionPage({
               </>
             )}
 
-            {!isConnected && (
-              <Card className="p-6 bg-muted/50">
-                <h3 className="font-semibold mb-2">Before you begin:</h3>
-                <ul className="space-y-2 text-sm text-muted-foreground list-disc list-inside">
-                  <li>Find a quiet place with minimal background noise</li>
-                  <li>Test your microphone and make sure it's working</li>
-                  <li>Have a glass of water ready</li>
-                  <li>Take deep breaths and stay calm</li>
-                  <li>You can end the interview at any time</li>
-                </ul>
-              </Card>
-            )}
+            {callStatus !== CallStatus.ACTIVE &&
+              callStatus !== CallStatus.FINISHED && (
+                <Card className="p-6 bg-muted/50">
+                  <h3 className="font-semibold mb-2">Before you begin:</h3>
+                  <ul className="space-y-2 text-sm text-muted-foreground list-disc list-inside">
+                    <li>Find a quiet place with minimal background noise</li>
+                    <li>Test your microphone and make sure it's working</li>
+                    <li>Have a glass of water ready</li>
+                    <li>Take deep breaths and stay calm</li>
+                    <li>You can end the interview at any time</li>
+                  </ul>
+                </Card>
+              )}
           </>
         )}
       </div>
