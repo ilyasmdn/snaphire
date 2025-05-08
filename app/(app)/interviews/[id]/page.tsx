@@ -284,7 +284,7 @@ export default function InterviewSessionPage({
         if (result.success) {
           toast.success("Interview completed! Feedback generated successfully");
           router.push(
-            `/interviews/${unwrappedParams.id}/feedback?feedbackId=${result.feedbackId}`
+            `/interviews/${unwrappedParams.id}/feedback`
           );
         } else {
           toast.error(

@@ -61,67 +61,46 @@ export default function FeedbackPage({
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const unwrappedParams = use(params);
 
-  // This is a placeholder for the actual data fetching logic
+  // Fetch interview and feedback data
   useEffect(() => {
-    // Simulating loading state for design purposes
-    setTimeout(() => {
-      setLoading(false);
+    async function fetchData() {
+      try {
+        setLoading(true);
 
-      // Placeholder feedback data
-      setFeedback({
-        strengths: [
-          "Excellent communication skills",
-          "Strong technical knowledge",
-          "Clear and structured responses",
-          "Good examples to support points",
-        ],
-        areasOfImprovement: [
-          "Could provide more specific metrics when discussing achievements",
-          "Some responses could be more concise",
-          "Consider using the STAR method more consistently",
-        ],
-        overallScore: 85,
-        questionFeedback: [
-          {
-            question:
-              "Tell me about a challenging project you've worked on and how you handled it.",
-            score: 90,
-            comments:
-              "Excellent response with clear project details, challenges faced, and resolution. Good demonstration of problem-solving skills.",
-          },
-          {
-            question: "How do you handle tight deadlines?",
-            score: 80,
-            comments:
-              "Good answer showing prioritization skills, but could have included a specific example of successfully meeting a tight deadline.",
-          },
-          {
-            question: "What are your strengths and weaknesses?",
-            score: 85,
-            comments:
-              "Honest self-assessment with good examples of strengths. Weakness mentioned was genuine with steps to improve.",
-          },
-        ],
-        summary:
-          "Overall, you performed very well in this interview. Your responses were clear, structured, and demonstrated both technical expertise and soft skills. With some minor improvements in specificity and conciseness, you would make an even stronger impression.",
-      });
+        // Fetch interview data
+        const interviewResponse = await fetch(
+          `/api/user/interviews/${unwrappedParams.id}`
+        );
+        if (!interviewResponse.ok) {
+          const errorData = await interviewResponse.json();
+          throw new Error(errorData.error || "Failed to fetch interview data");
+        }
 
-      // Placeholder interview data
-      setInterview({
-        id: unwrappedParams.id,
-        role: "Frontend Developer",
-        type: "Technical",
-        level: "Mid-Senior",
-        questions: [
-          "Tell me about a challenging project you've worked on and how you handled it.",
-          "How do you handle tight deadlines?",
-          "What are your strengths and weaknesses?",
-        ],
-        finalized: true,
-        userId: "user123",
-        createdAt: new Date().toISOString(),
-      });
-    }, 1500);
+        const interviewData = await interviewResponse.json();
+        setInterview(interviewData.interview);
+
+        // Fetch feedback data - assuming there's an endpoint for feedback
+        const feedbackResponse = await fetch(
+          `/api/user/interviews/${unwrappedParams.id}/feedback`
+        );
+        if (!feedbackResponse.ok) {
+          const errorData = await feedbackResponse.json();
+          throw new Error(errorData.error || "Failed to fetch feedback data");
+        }
+
+        const feedbackData = await feedbackResponse.json();
+        setFeedback(feedbackData.feedback);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError(
+          err instanceof Error ? err.message : "An unknown error occurred"
+        );
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
   }, [unwrappedParams.id]);
 
   const handleDownload = () => {
@@ -337,11 +316,11 @@ export default function FeedbackPage({
         </Card>
       </div>
 
-      {/* Question Feedback */}
+      {/* Response Assessment */}
       <Card className="p-6">
         <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
           <FileText className="h-5 w-5 text-primary" />
-          Question-by-Question Feedback
+          Response Assessment
         </h2>
 
         <div className="space-y-8">
@@ -349,7 +328,7 @@ export default function FeedbackPage({
             <div key={index} className="pb-6 border-b last:border-0 last:pb-0">
               <div className="flex justify-between items-start mb-2">
                 <h3 className="font-medium">
-                  Q{index + 1}: {qf.question}
+                  {index + 1}. {qf.question}
                 </h3>
                 {renderScoreStars(qf.score)}
               </div>
