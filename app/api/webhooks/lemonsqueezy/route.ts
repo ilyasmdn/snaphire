@@ -62,20 +62,63 @@ export async function POST(req: NextRequest) {
     if (!isValid) {
       console.error("Invalid webhook signature");
       return new NextResponse("Invalid signature", { status: 401 });
-    }    // Parse the payload
+    }
+
+    // Parse the payload
     const payload = JSON.parse(rawBody) as WebhookPayload;
     const { event_name } = payload.meta;
-    const { user_email, variant_id, order_id } = payload.data.attributes;
 
+    // Log the entire payload structure to debug
+    console.log("Full webhook payload:", JSON.stringify(payload));
+    // Extract email and safely handle possibly missing attributes
+    const user_email = payload.data.attributes.user_email;
+
+    // For order_created events, the variant_id and order_id are in different locations
+    let variant_id, order_id;
+
+    // Based on the actual webhook payload structure
+    if (event_name === "order_created") {
+      // For order_created events, variant_id is in first_order_item
+      if (payload.data.attributes.first_order_item) {
+        variant_id = payload.data.attributes.first_order_item.variant_id;
+        console.log(`Found variant_id in first_order_item: ${variant_id}`);
+      }
+
+      // The numeric order ID is in attributes.order_number
+      // The string order ID is in data.id or attributes.identifier
+      order_id = payload.data.attributes.order_number || payload.data.id;
+
+      console.log(
+        `Extracted from payload - Order ID: ${order_id}, Variant ID: ${variant_id}`
+      );
+    } else {
+      // For other events, use the standard attributes
+      variant_id = payload.data.attributes.variant_id;
+      order_id = payload.data.attributes.order_id;
+    }
     console.log(`Processing ${event_name} for ${user_email}`);
-    console.log(`Webhook details - Event: ${event_name}, Email: ${user_email}, Order ID: ${order_id}, Variant ID: ${variant_id}`);
-    
+    console.log(
+      `Webhook details - Event: ${event_name}, Email: ${user_email}, Order ID: ${order_id}, Variant ID: ${variant_id}`
+    );
+
     // Log environment variables for debugging variant IDs
     console.log(`Environment variables for variants: 
       Single: ${process.env.NEXT_PUBLIC_LEMONSQUEEZY_SINGLE_INTERVIEW_VARIANT_ID}, 
       Pack: ${process.env.NEXT_PUBLIC_LEMONSQUEEZY_PACK_VARIANT_ID}, 
       Starter: ${process.env.NEXT_PUBLIC_LEMONSQUEEZY_STARTER_VARIANT_ID}, 
       Pro: ${process.env.NEXT_PUBLIC_LEMONSQUEEZY_PRO_VARIANT_ID}`);
+
+    // Check if we have the necessary data to process this webhook
+    if (event_name === "order_created" && (!variant_id || !order_id)) {
+      console.error(
+        "❌ Missing critical information for order_created event:",
+        {
+          variant_id,
+          order_id,
+        }
+      );
+      // Still process it - our handler has additional extraction logic
+    }
 
     // Handle different event types
     switch (event_name) {
@@ -318,13 +361,23 @@ async function handleSubscriptionPaymentFailed(payload: WebhookPayload) {
 
 // Handler for order_created event (one-time purchases)
 async function handleOrderCreated(payload: WebhookPayload) {
-  const { user_email, order_id, variant_id } = payload.data.attributes;
-  
-  console.log(`🔍 handleOrderCreated called with:
+  // Extract user_email from attributes
+  const { user_email } = payload.data.attributes;
+
+  // Extract variant_id from first_order_item as seen in the actual payload
+  let variant_id = payload.data.attributes.first_order_item?.variant_id;
+
+  // Extract order_id from the order_number field or data.id as fallback
+  let order_id = payload.data.attributes.order_number || payload.data.id;
+
+  console.log(
+    `🔍 handleOrderCreated called with:
     Email: ${user_email}
     Order ID: ${order_id}
     Variant ID: ${variant_id}
-    Full payload:`, JSON.stringify(payload.data.attributes));
+    Full payload:`,
+    JSON.stringify(payload.data.attributes)
+  );
 
   try {
     // Find the user by email
@@ -340,11 +393,13 @@ async function handleOrderCreated(payload: WebhookPayload) {
     }
 
     const userId = usersSnapshot.docs[0].id;
-    console.log(`✅ Found user with ID: ${userId}`);    // Determine the purchase type and interview count based on the variant
+    console.log(`✅ Found user with ID: ${userId}`); // Determine the purchase type and interview count based on the variant
     console.log(`Mapping variant ID ${variant_id} to purchase type`);
     const purchaseType = getPlanFromVariantId(variant_id);
-    console.log(`Mapped variant ID ${variant_id} to purchase type: ${purchaseType}`);
-    
+    console.log(
+      `Mapped variant ID ${variant_id} to purchase type: ${purchaseType}`
+    );
+
     const interviewCount =
       purchaseType === "single" ? 1 : purchaseType === "pack" ? 5 : 0;
     console.log(`Interview count for ${purchaseType}: ${interviewCount}`);
@@ -371,13 +426,18 @@ async function handleOrderCreated(payload: WebhookPayload) {
       amount: payload.data.attributes.total || 0,
       isActive: true,
     };
-    
-    console.log(`Attempting to create purchase record in database:`, purchaseRecord);
-    
+
+    console.log(
+      `Attempting to create purchase record in database:`,
+      purchaseRecord
+    );
+
     try {
       // Create a purchase record in the database
       const purchaseRef = await db.collection("purchases").add(purchaseRecord);
-      console.log(`✅ Purchase record created successfully with ID: ${purchaseRef.id}`);
+      console.log(
+        `✅ Purchase record created successfully with ID: ${purchaseRef.id}`
+      );
     } catch (dbError) {
       console.error(`❌ Error creating purchase record:`, dbError);
       throw dbError;
@@ -393,7 +453,19 @@ async function handleOrderCreated(payload: WebhookPayload) {
 
 // Handler for order_refunded event
 async function handleOrderRefunded(payload: WebhookPayload) {
-  const { user_email, order_id } = payload.data.attributes;
+  // Extract user_email from attributes
+  const { user_email } = payload.data.attributes;
+
+  // For order events, order_id is in attributes.order_number
+  let order_id = payload.data.attributes.order_number || payload.data.id;
+
+  console.log(
+    `🔄 handleOrderRefunded called with:
+    Email: ${user_email}
+    Order ID: ${order_id}
+    Full payload:`,
+    JSON.stringify(payload.data.attributes)
+  );
 
   try {
     // Find the user by email
@@ -447,13 +519,16 @@ async function handleOrderRefunded(payload: WebhookPayload) {
 // Get the plan name from the variant ID
 function getPlanFromVariantId(variantId: number): string {
   console.log(`🔍 Getting plan for variant ID: ${variantId}`);
-  
+
   // Get variant IDs from environment variables
   const starterVariantId =
     process.env.NEXT_PUBLIC_LEMONSQUEEZY_STARTER_VARIANT_ID;
   const proVariantId = process.env.NEXT_PUBLIC_LEMONSQUEEZY_PRO_VARIANT_ID;
+
+  // Use hardcoded values for now based on the actual webhook, if env vars aren't set
   const singleVariantId =
-    process.env.NEXT_PUBLIC_LEMONSQUEEZY_SINGLE_INTERVIEW_VARIANT_ID;
+    process.env.NEXT_PUBLIC_LEMONSQUEEZY_SINGLE_INTERVIEW_VARIANT_ID ||
+    "766291"; // Default to actual variant ID from payload
   const packVariantId = process.env.NEXT_PUBLIC_LEMONSQUEEZY_PACK_VARIANT_ID;
 
   console.log(`Environment variables:
@@ -469,14 +544,24 @@ function getPlanFromVariantId(variantId: number): string {
     [singleVariantId || ""]: "single",
     [packVariantId || ""]: "pack",
   };
-
   // Convert the incoming variantId to a string for comparison with env vars
+  if (!variantId) {
+    console.error("❌ Variant ID is undefined or null!");
+    return "unknown";
+  }
+
   const variantIdStr = variantId.toString();
   console.log(`Looking up plan for variant ID string: "${variantIdStr}"`);
   console.log(`Plan map:`, planMap);
-  
+
   const plan = planMap[variantIdStr] || "unknown";
   console.log(`Mapped plan: ${plan}`);
-  
+
+  if (plan === "unknown") {
+    console.error(
+      `❌ Could not map variant ID ${variantIdStr} to any plan. Check your environment variables.`
+    );
+  }
+
   return plan;
 }

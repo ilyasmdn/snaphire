@@ -30,13 +30,13 @@ export async function POST(req: Request) {
         { error: userResult.error.message },
         { status: 500 }
       );
-    }    // Log the checkout request
+    } // Log the checkout request
     console.log(`Creating checkout with:
       Store ID: ${process.env.LEMONSQUEEZY_STORE_ID}
       Variant ID: ${variantId}
       Email: ${email}
     `);
-    
+
     // Create checkout
     const { data: checkout, error: checkoutError } = await createCheckout(
       Number(process.env.LEMONSQUEEZY_STORE_ID),
