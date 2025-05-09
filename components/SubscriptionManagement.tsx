@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,17 +30,14 @@ const PLAN_FEATURES: Record<SubscriptionPlan, PlanFeature[]> = {
     { name: "Basic profile", included: true },
     { name: "Limited mock interviews", included: false },
     { name: "Basic analytics", included: false },
-    { name: "Custom interview scenarios", included: false },
-    { name: "Learning resources", included: false },
-    { name: "Priority support", included: false },
+    { name: "Standard question bank", included: false },
+    { name: "Email support", included: false },
   ],
   starter: [
     { name: "5 AI-powered mock interviews per month", included: true },
     { name: "Basic performance analytics", included: true },
     { name: "Standard question bank access", included: true },
     { name: "Email support", included: true },
-    { name: "Custom interview scenarios", included: false },
-    { name: "Learning resources", included: false },
   ],
   pro: [
     { name: "Unlimited AI-powered mock interviews", included: true },
@@ -74,9 +71,51 @@ export function SubscriptionManagement() {
     "subscription"
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [monthlyInterviewsUsed, setMonthlyInterviewsUsed] = useState<number>(0);
+  const [isLoadingInterviewCount, setIsLoadingInterviewCount] = useState(false);
   const { subscription, isActive, isPlan } = useSubscriptionContext();
   const { purchases, getActivePurchases, getTotalRemainingInterviews } =
     usePurchases();
+  // Fetch the number of interviews used in the current month for starter plan users
+  useEffect(() => {
+    const fetchMonthlyInterviewUsage = async () => {
+      if (isActive && subscription?.plan === "starter") {
+        setIsLoadingInterviewCount(true);
+        try {
+          // Get the current month's interviews
+          const response = await fetch("/api/user/interviews");
+
+          if (!response.ok) {
+            throw new Error("Failed to fetch interviews");
+          }
+
+          const data = await response.json();
+          const interviews = data.interviews || [];
+
+          // Filter interviews from the current month
+          const now = new Date();
+          const firstDayOfMonth = new Date(
+            now.getFullYear(),
+            now.getMonth(),
+            1
+          );
+
+          const thisMonthsInterviews = interviews.filter((interview: any) => {
+            const interviewDate = new Date(interview.createdAt);
+            return interviewDate >= firstDayOfMonth;
+          });
+
+          setMonthlyInterviewsUsed(thisMonthsInterviews.length);
+        } catch (error) {
+          console.error("Error fetching interview usage:", error);
+        } finally {
+          setIsLoadingInterviewCount(false);
+        }
+      }
+    };
+
+    fetchMonthlyInterviewUsage();
+  }, [isActive, subscription?.plan]);
 
   const handleManageSubscription = async () => {
     setIsLoading(true);
@@ -145,7 +184,6 @@ export function SubscriptionManagement() {
                 Manage your subscription and billing
               </p>
             </div>
-
             <div className="flex items-center justify-between border-b pb-4">
               <div>
                 <h3 className="font-medium">Current Plan</h3>
@@ -153,10 +191,15 @@ export function SubscriptionManagement() {
                   <span className="text-xl font-bold capitalize">
                     {currentPlan === "unknown" ? "Free" : currentPlan}
                   </span>
-                  {isActive && (
+                  {isActive ? (
                     <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700">
                       <CheckCircle2 className="mr-1 h-3 w-3" />
                       Active
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700">
+                      <CheckCircle2 className="mr-1 h-3 w-3" />
+                        Inactive
                     </span>
                   )}
                 </div>
@@ -176,18 +219,13 @@ export function SubscriptionManagement() {
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Loading...
                   </Button>
-                ) : isActive ? (
+                ) : (
                   <Button onClick={handleManageSubscription}>
                     Manage Subscription
                   </Button>
-                ) : (
-                  <Button asChild>
-                    <Link href="/pricing">Upgrade</Link>
-                  </Button>
                 )}
               </div>
-            </div>
-
+            </div>{" "}
             {isActive && subscription && (
               <div className="space-y-4 border-b pb-4">
                 <div>
@@ -209,6 +247,49 @@ export function SubscriptionManagement() {
                         Last Updated: {formatDate(subscription.updatedAt)}
                       </p>
                     )}
+
+                  {/* Monthly interview limit info for starter plan */}
+                  {isPlan("starter") && (
+                    <div className="mt-3 p-3 bg-muted/40 rounded-lg">
+                      <h5 className="text-sm font-medium mb-1">
+                        Monthly Interview Usage
+                      </h5>
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm text-muted-foreground">
+                          {isLoadingInterviewCount ? (
+                            <span className="flex items-center">
+                              <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                              Loading...
+                            </span>
+                          ) : (
+                            <>
+                              <span>{monthlyInterviewsUsed} used</span>
+                              <span className="mx-1">/</span>
+                              <span>5 included</span>
+                            </>
+                          )}
+                        </p>
+                        <span
+                          className={`text-xs px-1.5 py-0.5 rounded-full font-medium 
+                            ${
+                              monthlyInterviewsUsed >= 5
+                                ? "bg-amber-100 text-amber-700"
+                                : "bg-green-100 text-green-700"
+                            }`}
+                        >
+                          {5 - monthlyInterviewsUsed} remaining
+                        </span>
+                      </div>
+                      <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                        <div
+                          className="bg-primary h-1.5 rounded-full transition-all"
+                          style={{
+                            width: `${(monthlyInterviewsUsed / 5) * 100}%`,
+                          }}
+                        ></div>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 <div className="flex justify-end">
@@ -218,7 +299,6 @@ export function SubscriptionManagement() {
                 </div>
               </div>
             )}
-
             <div>
               <h4 className="font-medium mb-4">Included Features</h4>
               <ul className="space-y-3">
@@ -242,7 +322,6 @@ export function SubscriptionManagement() {
                 ))}
               </ul>
             </div>
-
             {!isPlan("teams") && (
               <div className="flex justify-end pt-4">
                 <Button asChild variant={isPlan("pro") ? "outline" : "default"}>

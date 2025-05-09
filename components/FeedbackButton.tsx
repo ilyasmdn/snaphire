@@ -70,14 +70,14 @@ export function FeedbackButton() {
               <X className="h-4 w-4" />
             </Button>
 
-            <h2 className="text-xl font-bold mb-4">Share Your Feedback</h2>
-            <p className="text-muted-foreground mb-6">
+            <h2 className="text-xl font-bold">Share Your Feedback</h2>
+            <p className="text-muted-foreground">
               We'd love to hear your thoughts on how we can improve SnapHire.
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <Label htmlFor="feedback-type">Type of Feedback</Label>
+                <Label htmlFor="feedback-type" className="mb-2">Type of Feedback</Label>
                 <select
                   id="feedback-type"
                   value={feedbackType}
@@ -92,7 +92,7 @@ export function FeedbackButton() {
               </div>
 
               <div>
-                <Label htmlFor="feedback-text">Your Feedback</Label>
+                <Label htmlFor="feedback-text" className="mb-2">Your Feedback</Label>
                 <Textarea
                   id="feedback-text"
                   placeholder="Please describe your feedback in detail..."
