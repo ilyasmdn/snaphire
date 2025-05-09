@@ -7,6 +7,7 @@ import { LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { sidebarLinks } from "@/lib/constants";
 import { MobileNav } from "@/components/MobileNav";
+import { FeedbackButton } from "@/components/FeedbackButton";
 import { auth } from "@/firebase/client";
 import { signOut, onAuthStateChanged, User } from "firebase/auth";
 import { toast } from "sonner";
@@ -136,12 +137,13 @@ export default function AppLayout({ children }: { children: ReactNode }) {
               <span>SnapHire</span>
             </Link>
             <MobileNav />
-          </header>
-
+          </header>{" "}
           {/* Page Content */}
           <main className="flex-1 overflow-y-auto bg-background">
             {children}
           </main>
+          {/* Floating Feedback Button */}
+          <FeedbackButton />
         </div>
       </div>
     </SubscriptionProvider>

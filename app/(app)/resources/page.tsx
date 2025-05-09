@@ -10,8 +10,10 @@ import {
   Youtube,
   Download,
   ExternalLink,
+  Lock,
 } from "lucide-react";
 import Link from "next/link";
+import { useFeatureAccess } from "@/lib/hooks/use-feature-access";
 
 interface Resource {
   title: string;
@@ -23,6 +25,38 @@ interface Resource {
 }
 
 export default function ResourcesPage() {
+  const { canUseFeature } = useFeatureAccess();
+  const hasLearningResourcesAccess = canUseFeature("learning_resources");
+
+  // If user doesn't have access to learning resources, show upgrade UI
+  if (!hasLearningResourcesAccess) {
+    return (
+      <div className="container py-10">
+        <h1 className="text-3xl font-bold mb-8">Learning Resources</h1>
+
+        <Card className="p-8 max-w-2xl mx-auto">
+          <div className="flex flex-col items-center text-center">
+            <div className="p-3 rounded-full bg-amber-100 mb-4">
+              <Lock className="h-8 w-8 text-amber-700" />
+            </div>
+
+            <h2 className="text-2xl font-bold mb-2">Pro Resources</h2>
+
+            <p className="text-muted-foreground mb-6">
+              Our curated learning resources are available exclusively for Pro
+              and Teams subscribers. Upgrade to access guides, templates, and
+              tutorial videos to help you ace your interviews.
+            </p>
+
+            <Button asChild>
+              <Link href="/pricing">Upgrade to Pro</Link>
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
   const resources: Resource[] = [
     {
       title: "STAR Method Guide",
@@ -85,7 +119,6 @@ export default function ResourcesPage() {
         return "bg-muted text-muted-foreground";
     }
   };
-
   const getActionIcon = (type: Resource["type"], isExternal?: boolean) => {
     if (isExternal) return ExternalLink;
     switch (type) {

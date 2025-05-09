@@ -9,6 +9,7 @@ import {
   TrendingUp,
   MessageSquare,
   Loader2,
+  Lock,
 } from "lucide-react";
 import {
   BarChart,
@@ -26,6 +27,10 @@ import {
   PolarRadiusAxis,
   Radar,
 } from "recharts";
+import { useFeatureAccess } from "@/lib/hooks/use-feature-access";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { FeatureGate } from "@/components/FeatureGate";
 
 interface Interview {
   id: string;
@@ -53,50 +58,59 @@ export default function AnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [interviews, setInterviews] = useState<InterviewWithFeedback[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const { canUseFeature } = useFeatureAccess();
+
+  // Check if user has access to advanced analytics
+  const hasAdvancedAnalyticsAccess = canUseFeature("advanced_analytics");
 
   useEffect(() => {
-    async function fetchData() {
-      try {
-        // Fetch interviews
-        const response = await fetch("/api/user/interviews");
-        if (!response.ok) {
-          throw new Error("Failed to fetch interviews");
-        }
-        const data = await response.json();
-        const interviewsData = data.interviews || [];
+    // Only fetch data if user has access
+    if (hasAdvancedAnalyticsAccess) {
+      async function fetchData() {
+        try {
+          // Fetch interviews
+          const response = await fetch("/api/user/interviews");
+          if (!response.ok) {
+            throw new Error("Failed to fetch interviews");
+          }
+          const data = await response.json();
+          const interviewsData = data.interviews || [];
 
-        // Fetch feedback for each interview
-        const interviewsWithFeedback = await Promise.all(
-          interviewsData.map(async (interview: Interview) => {
-            try {
-              const feedbackResponse = await fetch(
-                `/api/user/interviews/${interview.id}/feedback`
-              );
-              if (feedbackResponse.ok) {
-                const feedbackData = await feedbackResponse.json();
-                return {
-                  ...interview,
-                  feedback: feedbackData.feedback,
-                };
+          // Fetch feedback for each interview
+          const interviewsWithFeedback = await Promise.all(
+            interviewsData.map(async (interview: Interview) => {
+              try {
+                const feedbackResponse = await fetch(
+                  `/api/user/interviews/${interview.id}/feedback`
+                );
+                if (feedbackResponse.ok) {
+                  const feedbackData = await feedbackResponse.json();
+                  return {
+                    ...interview,
+                    feedback: feedbackData.feedback,
+                  };
+                }
+                return interview;
+              } catch {
+                return interview;
               }
-              return interview;
-            } catch {
-              return interview;
-            }
-          })
-        );
+            })
+          );
 
-        setInterviews(interviewsWithFeedback);
-      } catch (err) {
-        console.error("Error fetching analytics data:", err);
-        setError("Failed to load analytics data");
-      } finally {
-        setLoading(false);
+          setInterviews(interviewsWithFeedback);
+        } catch (err) {
+          console.error("Error fetching analytics data:", err);
+          setError("Failed to load analytics data");
+        } finally {
+          setLoading(false);
+        }
       }
-    }
 
-    fetchData();
-  }, []);
+      fetchData();
+    } else {
+      setLoading(false);
+    }
+  }, [hasAdvancedAnalyticsAccess]);
 
   // Calculate statistics
   const totalInterviews = interviews.length;
@@ -160,8 +174,12 @@ export default function AnalyticsPage() {
     },
     {
       label: "Questions Answered",
-      value: interviews.reduce((sum, i) => sum + (i.questions?.length || 0), 0).toString(),
-      change: `${Math.round(completedInterviews / totalInterviews * 100)}% completion`,
+      value: interviews
+        .reduce((sum, i) => sum + (i.questions?.length || 0), 0)
+        .toString(),
+      change: `${Math.round(
+        (completedInterviews / totalInterviews) * 100
+      )}% completion`,
       trend: "up",
       icon: Target,
     },
@@ -173,6 +191,34 @@ export default function AnalyticsPage() {
       icon: TrendingUp,
     },
   ];
+
+  if (!hasAdvancedAnalyticsAccess) {
+    return (
+      <div className="container py-10">
+        <h1 className="text-3xl font-bold mb-8">Analytics</h1>
+
+        <Card className="p-8 max-w-2xl mx-auto">
+          <div className="flex flex-col items-center text-center">
+            <div className="p-3 rounded-full bg-amber-100 mb-4">
+              <Lock className="h-8 w-8 text-amber-700" />
+            </div>
+
+            <h2 className="text-2xl font-bold mb-2">Advanced Analytics</h2>
+
+            <p className="text-muted-foreground mb-6">
+              Advanced analytics are available with our Pro subscription plan.
+              Upgrade to access performance insights, trend analysis, and
+              detailed feedback reports.
+            </p>
+
+            <Button asChild>
+              <Link href="/pricing">Upgrade to Pro</Link>
+            </Button>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   if (loading) {
     return (
@@ -221,21 +267,28 @@ export default function AnalyticsPage() {
           {performanceData.length > 0 ? (
             <div className="h-[300px]">
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={performanceData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" opacity={0.3} />
-                  <XAxis 
-                    dataKey="date" 
-                    stroke="var(--muted-foreground)"
-                    fontSize={12}
-                    tickLine={false}
-                    axisLine={{ stroke: 'var(--border)', strokeWidth: 1 }}
+                <LineChart
+                  data={performanceData}
+                  margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    stroke="var(--border)"
+                    opacity={0.3}
                   />
-                  <YAxis 
-                    domain={[0, 100]} 
+                  <XAxis
+                    dataKey="date"
                     stroke="var(--muted-foreground)"
                     fontSize={12}
                     tickLine={false}
-                    axisLine={{ stroke: 'var(--border)', strokeWidth: 1 }}
+                    axisLine={{ stroke: "var(--border)", strokeWidth: 1 }}
+                  />
+                  <YAxis
+                    domain={[0, 100]}
+                    stroke="var(--muted-foreground)"
+                    fontSize={12}
+                    tickLine={false}
+                    axisLine={{ stroke: "var(--border)", strokeWidth: 1 }}
                     tickFormatter={(value) => `${value}%`}
                   />
                   <Tooltip
@@ -245,7 +298,10 @@ export default function AnalyticsPage() {
                       borderRadius: "var(--radius)",
                       boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1)",
                     }}
-                    labelStyle={{ color: "var(--muted-foreground)", marginBottom: "4px" }}
+                    labelStyle={{
+                      color: "var(--muted-foreground)",
+                      marginBottom: "4px",
+                    }}
                     itemStyle={{ color: "var(--foreground)" }}
                     formatter={(value: number) => [`${value}%`, "Score"]}
                   />
@@ -283,7 +339,7 @@ export default function AnalyticsPage() {
                   <PolarGrid stroke="var(--border)" opacity={0.3} />
                   <PolarAngleAxis
                     dataKey="category"
-                    tick={{ 
+                    tick={{
                       fill: "var(--muted-foreground)",
                       fontSize: 12,
                     }}
@@ -291,7 +347,7 @@ export default function AnalyticsPage() {
                   <PolarRadiusAxis
                     angle={90}
                     domain={[0, 100]}
-                    tick={{ 
+                    tick={{
                       fill: "var(--muted-foreground)",
                       fontSize: 12,
                     }}
@@ -312,7 +368,10 @@ export default function AnalyticsPage() {
                       borderRadius: "var(--radius)",
                       boxShadow: "0 1px 3px 0 rgb(0 0 0 / 0.1)",
                     }}
-                    labelStyle={{ color: "var(--muted-foreground)", marginBottom: "4px" }}
+                    labelStyle={{
+                      color: "var(--muted-foreground)",
+                      marginBottom: "4px",
+                    }}
                     itemStyle={{ color: "var(--foreground)" }}
                     formatter={(value: number) => [`${value}%`, "Score"]}
                   />

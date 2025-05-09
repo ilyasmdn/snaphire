@@ -17,6 +17,8 @@ import {
 import { useState, useEffect } from "react";
 import { getCurrentUser } from "@/lib/actions/auth.action";
 import { toast } from "sonner";
+import { FeatureGate } from "@/components/FeatureGate";
+import { useFeatureAccess } from "@/lib/hooks/use-feature-access";
 
 // Define interview interface with the specified fields
 interface Interview {
@@ -242,6 +244,96 @@ export default function DashboardPage() {
           </div>
         </div>
       )}
+
+      {/* Performance Insights - Pro feature */}
+      <FeatureGate feature="advanced_analytics">
+        <div className="space-y-4 mt-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold">Performance Insights</h2>
+            <Button size="sm" variant="outline" asChild>
+              <Link href="/analytics">View Details</Link>
+            </Button>
+          </div>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <Card className="p-5">
+              <h3 className="font-medium mb-3">Key Strengths</h3>
+              {totalInterviews > 0 ? (
+                <ul className="space-y-2">
+                  <li className="flex items-center gap-2 text-sm">
+                    <div className="bg-green-100 p-1 rounded-full">
+                      <Star className="h-4 w-4 text-green-600" />
+                    </div>
+                    Communication skills
+                  </li>
+                  <li className="flex items-center gap-2 text-sm">
+                    <div className="bg-green-100 p-1 rounded-full">
+                      <Star className="h-4 w-4 text-green-600" />
+                    </div>
+                    Problem-solving approach
+                  </li>
+                </ul>
+              ) : (
+                <p className="text-muted-foreground text-sm">
+                  Complete an interview to see your strengths
+                </p>
+              )}
+            </Card>
+
+            <Card className="p-5">
+              <h3 className="font-medium mb-3">Areas to Improve</h3>
+              {totalInterviews > 0 ? (
+                <ul className="space-y-2">
+                  <li className="flex items-center gap-2 text-sm">
+                    <div className="bg-amber-100 p-1 rounded-full">
+                      <TrendingUp className="h-4 w-4 text-amber-600" />
+                    </div>
+                    Technical depth
+                  </li>
+                  <li className="flex items-center gap-2 text-sm">
+                    <div className="bg-amber-100 p-1 rounded-full">
+                      <TrendingUp className="h-4 w-4 text-amber-600" />
+                    </div>
+                    Answering behavioral questions
+                  </li>
+                </ul>
+              ) : (
+                <p className="text-muted-foreground text-sm">
+                  Complete an interview to see improvement areas
+                </p>
+              )}
+            </Card>
+          </div>
+        </div>
+      </FeatureGate>
+
+      {/* Learning Resources - Pro feature */}
+      <FeatureGate feature="learning_resources">
+        <div className="space-y-4 mt-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-xl font-semibold">Recommended Resources</h2>
+            <Button size="sm" variant="outline" asChild>
+              <Link href="/resources">View All</Link>
+            </Button>
+          </div>
+
+          <div className="grid gap-3">
+            <Card className="p-4 hover:bg-muted/30 transition-colors">
+              <Link href="/resources/star-method" className="flex gap-3">
+                <div className="bg-primary/10 p-2 rounded-lg h-fit">
+                  <Star className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-medium">STAR Method Guide</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Structure your interview answers effectively
+                  </p>
+                </div>
+              </Link>
+            </Card>
+          </div>
+        </div>
+      </FeatureGate>
 
       {/* Quick Tips */}
       <Card className="p-6 bg-primary/5 border-primary/10">

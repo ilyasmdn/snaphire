@@ -1,9 +1,13 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
+// Export re-usable utility functions
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
+
+// Export feature-access utilities
+export * from "./utils/feature-access";
 
 /**
  * Format a date string into a readable format

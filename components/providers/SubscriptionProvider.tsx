@@ -13,7 +13,7 @@ interface SubscriptionContextType {
   error: string | null;
   isActive: boolean;
   isPlan: (planName: SubscriptionPlan) => boolean;
-  hasAccess: (minimumPlan: SubscriptionPlan) => boolean;
+  hasAccess: (minimumPlan: SubscriptionPlan) => boolean; // Same as canAccessPlan in useFeatureAccess
 }
 
 const SubscriptionContext = createContext<SubscriptionContextType | undefined>(

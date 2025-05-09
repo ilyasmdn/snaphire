@@ -4,10 +4,12 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
-import { Mic, Phone, PhoneOff, Loader2 } from "lucide-react";
+import { Mic, Phone, PhoneOff, Loader2, Lock } from "lucide-react";
 import { vapi } from "@/lib/vapi.sdk";
 import { getCurrentUser } from "@/lib/actions/auth.action";
 import { toast } from "sonner";
+import { useFeatureAccess } from "@/lib/hooks/use-feature-access";
+import Link from "next/link";
 
 interface SavedMessage {
   role: "user" | "assistant" | "system";
@@ -22,6 +24,45 @@ export default function GenerateInterviewPage() {
   const [isInitiatingCall, setIsInitiatingCall] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
+  const { canConductInterview } = useFeatureAccess();
+
+  // Check if user has access to interview functionality
+  const hasInterviewAccess = canConductInterview();
+
+  // If user doesn't have interview access, show the access restriction UI
+  if (!hasInterviewAccess) {
+    return (
+      <div className="container py-10">
+        <Card className="p-8 max-w-2xl mx-auto">
+          <div className="flex flex-col items-center text-center">
+            <div className="p-3 rounded-full bg-amber-100 mb-4">
+              <Lock className="h-8 w-8 text-amber-700" />
+            </div>
+
+            <h1 className="text-2xl font-bold mb-2">
+              Interview Access Required
+            </h1>
+
+            <p className="text-muted-foreground mb-6">
+              To conduct mock interviews, you need either an active subscription
+              or interview credits.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button asChild>
+                <Link href="/pricing">Get a Subscription</Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link href="/pricing?tab=pay-per-interview">
+                  Buy Interview Credits
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   // Authentication check and user fetch
   useEffect(() => {
@@ -120,12 +161,11 @@ export default function GenerateInterviewPage() {
 
     setIsInitiatingCall(true);
     try {
-
       // @ts-ignore
       await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
         variableValues: {
           userid: userId,
-        }
+        },
       });
     } catch (error) {
       console.error("Failed to start Vapi call:", error);
