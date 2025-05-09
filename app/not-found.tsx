@@ -1,7 +1,10 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Metadata } from "next";
+import { use, useEffect } from "react";
 
 export const metadata: Metadata = {
   title: "Page Not Found | SnapHire",
@@ -9,6 +12,15 @@ export const metadata: Metadata = {
 };
 
 export default function NotFound() {
+    useEffect(() => {
+      const savedTheme = localStorage.getItem("theme");
+  
+      if (savedTheme === "dark") {
+        document.body.classList.add("dark");
+      } else {
+        document.body.classList.remove("dark");
+      }
+    }, []);
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <div className="max-w-md w-full text-center space-y-6">
