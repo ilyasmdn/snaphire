@@ -62,9 +62,7 @@ export async function POST(req: NextRequest) {
     if (!isValid) {
       console.error("Invalid webhook signature");
       return new NextResponse("Invalid signature", { status: 401 });
-    }
-
-    // Parse the payload
+    } // Parse the payload
     const payload = JSON.parse(rawBody) as WebhookPayload;
     const { event_name } = payload.meta;
     const { user_email } = payload.data.attributes;
@@ -73,6 +71,12 @@ export async function POST(req: NextRequest) {
 
     // Handle different event types
     switch (event_name) {
+      case "order_created":
+        await handleOrderCreated(payload);
+        break;
+      case "order_refunded":
+        await handleOrderRefunded(payload);
+        break;
       case "subscription_created":
         await handleSubscriptionCreated(payload);
         break;
@@ -301,6 +305,112 @@ async function handleSubscriptionPaymentFailed(payload: WebhookPayload) {
     console.log(`Payment failure recorded for user: ${userId}`);
   } catch (error) {
     console.error("Error handling payment failure:", error);
+  }
+}
+
+// Handler for order_created event (one-time purchases)
+async function handleOrderCreated(payload: WebhookPayload) {
+  const { user_email, order_id, variant_id } = payload.data.attributes;
+
+  try {
+    // Find the user by email
+    const usersSnapshot = await db
+      .collection("users")
+      .where("email", "==", user_email)
+      .get();
+
+    if (usersSnapshot.empty) {
+      console.error(`No user found with email: ${user_email}`);
+      return;
+    }
+
+    const userId = usersSnapshot.docs[0].id;
+
+    // Determine the purchase type and interview count based on the variant
+    const purchaseType = getPlanFromVariantId(variant_id);
+    const interviewCount =
+      purchaseType === "single" ? 1 : purchaseType === "pack" ? 5 : 0;
+
+    if (interviewCount === 0) {
+      console.error(`Invalid interview purchase variant: ${variant_id}`);
+      return;
+    }
+
+    // Calculate expiry date (6 months from now)
+    const expiryDate = new Date();
+    expiryDate.setMonth(expiryDate.getMonth() + 6);
+
+    // Create a purchase record in the database
+    await db.collection("purchases").add({
+      userId,
+      type: purchaseType,
+      interviewCount,
+      interviewsUsed: 0,
+      orderId: order_id.toString(),
+      purchaseDate: new Date().toISOString(),
+      expiryDate: expiryDate.toISOString(),
+      amount: payload.data.attributes.total || 0,
+      isActive: true,
+    });
+
+    console.log(
+      `Purchase created for user: ${userId}, interviews: ${interviewCount}`
+    );
+  } catch (error) {
+    console.error("Error handling order_created:", error);
+  }
+}
+
+// Handler for order_refunded event
+async function handleOrderRefunded(payload: WebhookPayload) {
+  const { user_email, order_id } = payload.data.attributes;
+
+  try {
+    // Find the user by email
+    const usersSnapshot = await db
+      .collection("users")
+      .where("email", "==", user_email)
+      .get();
+
+    if (usersSnapshot.empty) {
+      console.error(`No user found with email: ${user_email}`);
+      return;
+    }
+
+    const userId = usersSnapshot.docs[0].id;
+
+    // Find the purchase with the matching order ID
+    const purchasesSnapshot = await db
+      .collection("purchases")
+      .where("userId", "==", userId)
+      .where("orderId", "==", order_id.toString())
+      .get();
+
+    if (purchasesSnapshot.empty) {
+      console.error(`No purchase found with order ID: ${order_id}`);
+      return;
+    }
+
+    // Deactivate the purchase
+    const purchaseId = purchasesSnapshot.docs[0].id;
+    await db.collection("purchases").doc(purchaseId).update({
+      isActive: false,
+      refundedAt: new Date().toISOString(),
+    });
+
+    // Log the refund
+    await db.collection("payments").add({
+      userId,
+      email: user_email,
+      eventType: "order_refunded",
+      orderId: order_id.toString(),
+      timestamp: new Date().toISOString(),
+      refundData: payload.data.attributes,
+    });
+
+    console.log(`Purchase refunded for user: ${userId}, order: ${order_id}`);
+  } catch (error) {
+    console.error("Error handling order_refunded:", error);
   }
 }
 
