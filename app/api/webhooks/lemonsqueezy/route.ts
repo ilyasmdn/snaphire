@@ -62,12 +62,20 @@ export async function POST(req: NextRequest) {
     if (!isValid) {
       console.error("Invalid webhook signature");
       return new NextResponse("Invalid signature", { status: 401 });
-    } // Parse the payload
+    }    // Parse the payload
     const payload = JSON.parse(rawBody) as WebhookPayload;
     const { event_name } = payload.meta;
-    const { user_email } = payload.data.attributes;
+    const { user_email, variant_id, order_id } = payload.data.attributes;
 
     console.log(`Processing ${event_name} for ${user_email}`);
+    console.log(`Webhook details - Event: ${event_name}, Email: ${user_email}, Order ID: ${order_id}, Variant ID: ${variant_id}`);
+    
+    // Log environment variables for debugging variant IDs
+    console.log(`Environment variables for variants: 
+      Single: ${process.env.NEXT_PUBLIC_LEMONSQUEEZY_SINGLE_INTERVIEW_VARIANT_ID}, 
+      Pack: ${process.env.NEXT_PUBLIC_LEMONSQUEEZY_PACK_VARIANT_ID}, 
+      Starter: ${process.env.NEXT_PUBLIC_LEMONSQUEEZY_STARTER_VARIANT_ID}, 
+      Pro: ${process.env.NEXT_PUBLIC_LEMONSQUEEZY_PRO_VARIANT_ID}`);
 
     // Handle different event types
     switch (event_name) {
@@ -311,37 +319,48 @@ async function handleSubscriptionPaymentFailed(payload: WebhookPayload) {
 // Handler for order_created event (one-time purchases)
 async function handleOrderCreated(payload: WebhookPayload) {
   const { user_email, order_id, variant_id } = payload.data.attributes;
+  
+  console.log(`🔍 handleOrderCreated called with:
+    Email: ${user_email}
+    Order ID: ${order_id}
+    Variant ID: ${variant_id}
+    Full payload:`, JSON.stringify(payload.data.attributes));
 
   try {
     // Find the user by email
+    console.log(`Looking for user with email: ${user_email}`);
     const usersSnapshot = await db
       .collection("users")
       .where("email", "==", user_email)
       .get();
 
     if (usersSnapshot.empty) {
-      console.error(`No user found with email: ${user_email}`);
+      console.error(`❌ No user found with email: ${user_email}`);
       return;
     }
 
     const userId = usersSnapshot.docs[0].id;
-
-    // Determine the purchase type and interview count based on the variant
+    console.log(`✅ Found user with ID: ${userId}`);    // Determine the purchase type and interview count based on the variant
+    console.log(`Mapping variant ID ${variant_id} to purchase type`);
     const purchaseType = getPlanFromVariantId(variant_id);
+    console.log(`Mapped variant ID ${variant_id} to purchase type: ${purchaseType}`);
+    
     const interviewCount =
       purchaseType === "single" ? 1 : purchaseType === "pack" ? 5 : 0;
+    console.log(`Interview count for ${purchaseType}: ${interviewCount}`);
 
     if (interviewCount === 0) {
-      console.error(`Invalid interview purchase variant: ${variant_id}`);
+      console.error(`❌ Invalid interview purchase variant: ${variant_id}`);
       return;
     }
 
     // Calculate expiry date (6 months from now)
     const expiryDate = new Date();
     expiryDate.setMonth(expiryDate.getMonth() + 6);
+    console.log(`Set expiry date to: ${expiryDate.toISOString()}`);
 
-    // Create a purchase record in the database
-    await db.collection("purchases").add({
+    // Prepare purchase record
+    const purchaseRecord = {
       userId,
       type: purchaseType,
       interviewCount,
@@ -351,7 +370,18 @@ async function handleOrderCreated(payload: WebhookPayload) {
       expiryDate: expiryDate.toISOString(),
       amount: payload.data.attributes.total || 0,
       isActive: true,
-    });
+    };
+    
+    console.log(`Attempting to create purchase record in database:`, purchaseRecord);
+    
+    try {
+      // Create a purchase record in the database
+      const purchaseRef = await db.collection("purchases").add(purchaseRecord);
+      console.log(`✅ Purchase record created successfully with ID: ${purchaseRef.id}`);
+    } catch (dbError) {
+      console.error(`❌ Error creating purchase record:`, dbError);
+      throw dbError;
+    }
 
     console.log(
       `Purchase created for user: ${userId}, interviews: ${interviewCount}`
@@ -416,6 +446,8 @@ async function handleOrderRefunded(payload: WebhookPayload) {
 
 // Get the plan name from the variant ID
 function getPlanFromVariantId(variantId: number): string {
+  console.log(`🔍 Getting plan for variant ID: ${variantId}`);
+  
   // Get variant IDs from environment variables
   const starterVariantId =
     process.env.NEXT_PUBLIC_LEMONSQUEEZY_STARTER_VARIANT_ID;
@@ -423,6 +455,12 @@ function getPlanFromVariantId(variantId: number): string {
   const singleVariantId =
     process.env.NEXT_PUBLIC_LEMONSQUEEZY_SINGLE_INTERVIEW_VARIANT_ID;
   const packVariantId = process.env.NEXT_PUBLIC_LEMONSQUEEZY_PACK_VARIANT_ID;
+
+  console.log(`Environment variables:
+    Starter: ${starterVariantId}
+    Pro: ${proVariantId}
+    Single: ${singleVariantId}
+    Pack: ${packVariantId}`);
 
   // Convert environment variable strings to numbers for comparison
   const planMap: Record<string, string> = {
@@ -433,5 +471,12 @@ function getPlanFromVariantId(variantId: number): string {
   };
 
   // Convert the incoming variantId to a string for comparison with env vars
-  return planMap[variantId.toString()] || "unknown";
+  const variantIdStr = variantId.toString();
+  console.log(`Looking up plan for variant ID string: "${variantIdStr}"`);
+  console.log(`Plan map:`, planMap);
+  
+  const plan = planMap[variantIdStr] || "unknown";
+  console.log(`Mapped plan: ${plan}`);
+  
+  return plan;
 }
