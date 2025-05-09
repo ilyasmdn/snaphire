@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Metadata } from "next";
-import { use, useEffect } from "react";
+import { useEffect } from "react";
 
 export const metadata: Metadata = {
   title: "Page Not Found | SnapHire",
