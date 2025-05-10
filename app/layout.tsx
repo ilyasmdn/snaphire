@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/react"
 import { SpeedInsights } from "@vercel/speed-insights/next"
+import Head from "next/head";
 
 const roboto = Roboto({
   weight: ["400", "500", "700"],
@@ -56,6 +57,13 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={roboto.className}>
+      <Head>
+        <link rel="icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+        <link rel="manifest" href="/site.webmanifest" />
+        <meta name="theme-color" content="#ffffff" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      </Head>
       <body className="bg-background antialiased">
         {children}
         <Toaster position="top-center" richColors />
