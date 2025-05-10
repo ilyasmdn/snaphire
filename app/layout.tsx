@@ -34,7 +34,7 @@ export const metadata: Metadata = {
       "Master your interview skills with SnapHire's AI-powered platform",
     images: [
       {
-        url: "/og-image.jpg",
+        url: "/favicon-32x32.png",
         width: 1200,
         height: 630,
         alt: "SnapHire - AI-Powered Interview Practice Platform",
@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     title: "SnapHire - AI-Powered Interview Practice",
     description:
       "Master your interview skills with SnapHire's AI-powered platform",
-    images: ["/og-image.jpg"],
+    images: ["/favicon-32x32.png"],
   },
 };
 
