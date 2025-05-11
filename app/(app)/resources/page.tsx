@@ -2,7 +2,6 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Metadata } from "next";
 import {
   Book,
   Bookmark,
@@ -15,19 +14,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useFeatureAccess } from "@/lib/hooks/use-feature-access";
-
-export const metadata: Metadata = {
-  title: "Learning Resources | SnapHire",
-  description:
-    "Access interview guides, templates, and tutorial videos to help you prepare for your next job interview and improve your chances of success.",
-  keywords: [
-    "interview guides",
-    "resume templates",
-    "interview tips",
-    "career resources",
-    "job preparation materials",
-  ],
-};
 
 interface Resource {
   title: string;
@@ -78,7 +64,8 @@ export default function ResourcesPage() {
         "Learn how to structure your interview answers using the STAR (Situation, Task, Action, Result) method.",
       icon: Book,
       type: "guide",
-      link: "/resources/star-method",
+      link: "https://career.unm.edu/career-tools/star-method-interview-prep-packet-2020.pdf",
+      isExternal: true,
     },
     {
       title: "Technical Interview Checklist",
@@ -86,7 +73,7 @@ export default function ResourcesPage() {
         "A comprehensive checklist to help you prepare for technical interviews.",
       icon: FileText,
       type: "template",
-      link: "/downloads/tech-interview-checklist.pdf",
+      link: "/resources/tech-interview-checklist.pdf",
     },
     {
       title: "Common Behavioral Questions",
@@ -94,14 +81,8 @@ export default function ResourcesPage() {
         "50+ common behavioral interview questions with example answers.",
       icon: Book,
       type: "guide",
-      link: "/resources/behavioral-questions",
-    },
-    {
-      title: "Resume Templates",
-      description: "Professional resume templates optimized for ATS systems.",
-      icon: FileText,
-      type: "template",
-      link: "/downloads/resume-templates.zip",
+      link: "https://www.macslist.org/wp-content/uploads/2018/01/100-Practice-Behavioral-Interview-Questions.pdf",
+      isExternal: true,
     },
     {
       title: "Interview Body Language",
@@ -109,7 +90,7 @@ export default function ResourcesPage() {
         "Video guide on professional body language during interviews.",
       icon: Youtube,
       type: "video",
-      link: "https://youtube.com/watch?v=example",
+      link: "https://www.youtube.com/watch?v=Go4GVvcS02Y&ab_channel=CareerVidz",
       isExternal: true,
     },
     {
@@ -117,7 +98,7 @@ export default function ResourcesPage() {
       description: "Professional email templates to send after your interview.",
       icon: FileText,
       type: "template",
-      link: "/resources/thank-you-emails",
+      link: "/resources/Post-Interview_Thank_You_Email_Template.pdf",
     },
   ];
 
