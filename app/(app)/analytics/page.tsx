@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { Metadata } from "next";
 import {
   BarChart as BarChartIcon,
   Target,
@@ -31,19 +30,7 @@ import {
 import { useFeatureAccess } from "@/lib/hooks/use-feature-access";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { FeatureGate } from "@/components/FeatureGate";
 
-export const metadata: Metadata = {
-  title: "Performance Analytics | SnapHire",
-  description:
-    "Advanced analytics to track your interview performance trends, strengths, and areas for improvement. Gain insights into your progress over time.",
-  keywords: [
-    "interview analytics",
-    "performance tracking",
-    "interview skills analysis",
-    "improvement metrics",
-  ],
-};
 
 interface Interview {
   id: string;
