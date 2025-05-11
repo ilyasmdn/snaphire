@@ -89,10 +89,11 @@ type Message =
   | FunctionCallMessage
   | FunctionCallResultMessage;
 
-  // @ts-ignore
+// @ts-ignore
 export const interviewer: CreateAssistantDTO = {
   name: "Interviewer",
-  firstMessage: "Hello! Thank you for taking the time to speak with me today. I'm excited to learn more about you and your experience.",
+  firstMessage:
+    "Hello! Thank you for taking the time to speak with me today. I'm excited to learn more about you and your experience.",
   transcriber: {
     provider: "deepgram",
     model: "nova-2",
@@ -161,11 +162,26 @@ export default function InterviewSessionPage({
   const [lastMessage, setLastMessage] = useState<string>("");
   const [isSpeaking, setIsSpeaking] = useState(false);
   const unwrappedParams = use(params);
-
   useEffect(() => {
     async function fetchInterview() {
       setLoading(true);
       try {
+        // First check if feedback exists for this interview
+        const feedbackResponse = await fetch(
+          `/api/user/interviews/${unwrappedParams.id}/feedback`
+        );
+
+        // If feedback exists (200 OK response), redirect to feedback page
+        if (feedbackResponse.ok) {
+          const feedbackData = await feedbackResponse.json();
+          if (feedbackData.feedback) {
+            toast.info("Interview feedback already exists");
+            router.push(`/interviews/${unwrappedParams.id}/feedback`);
+            return;
+          }
+        }
+
+        // Fetch interview data if no feedback exists
         const response = await fetch(
           `/api/user/interviews/${unwrappedParams.id}`
         );
@@ -187,10 +203,9 @@ export default function InterviewSessionPage({
     }
 
     fetchInterview();
-  }, [unwrappedParams.id]);
+  }, [unwrappedParams.id, router]);
 
   useEffect(() => {
-
     const onCallStart = () => {
       console.log("Call started...");
       setCallStatus(CallStatus.ACTIVE);
@@ -202,7 +217,6 @@ export default function InterviewSessionPage({
     };
 
     const onMessage = (message: any) => {
-
       // Handle transcription messages
       if (message.type === MessageTypeEnum.TRANSCRIPT) {
         if (message.transcriptType === TranscriptMessageTypeEnum.FINAL) {
@@ -283,9 +297,7 @@ export default function InterviewSessionPage({
 
         if (result.success) {
           toast.success("Interview completed! Feedback generated successfully");
-          router.push(
-            `/interviews/${unwrappedParams.id}/feedback`
-          );
+          router.push(`/interviews/${unwrappedParams.id}/feedback`);
         } else {
           toast.error(
             "Interview completed, but there was an issue generating feedback"
@@ -316,11 +328,11 @@ export default function InterviewSessionPage({
           .map((question, index) => `${index + 1}. ${question}`)
           .join("\n") || "";
 
-          // @ts-ignore
+      // @ts-ignore
       await vapi.start(interviewer, {
         variableValues: {
           questions: formattedQuestions,
-        }
+        },
       });
 
       toast.success("Connected to AI interviewer");

@@ -60,7 +60,6 @@ export default function FeedbackPage({
   const [interview, setInterview] = useState<Interview | null>(null);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const unwrappedParams = use(params);
-
   // Fetch interview and feedback data
   useEffect(() => {
     async function fetchData() {
@@ -79,16 +78,34 @@ export default function FeedbackPage({
         const interviewData = await interviewResponse.json();
         setInterview(interviewData.interview);
 
-        // Fetch feedback data - assuming there's an endpoint for feedback
+        // Fetch feedback data
         const feedbackResponse = await fetch(
           `/api/user/interviews/${unwrappedParams.id}/feedback`
         );
+
         if (!feedbackResponse.ok) {
+          // If feedback doesn't exist, redirect to interview page
+          if (feedbackResponse.status === 404) {
+            toast.info(
+              "No feedback available yet. Please complete the interview first."
+            );
+            router.push(`/interviews/${unwrappedParams.id}`);
+            return;
+          }
+
           const errorData = await feedbackResponse.json();
           throw new Error(errorData.error || "Failed to fetch feedback data");
         }
 
         const feedbackData = await feedbackResponse.json();
+        if (!feedbackData.feedback) {
+          toast.info(
+            "No feedback available yet. Please complete the interview first."
+          );
+          router.push(`/interviews/${unwrappedParams.id}`);
+          return;
+        }
+
         setFeedback(feedbackData.feedback);
       } catch (err) {
         console.error("Error fetching data:", err);
@@ -101,7 +118,7 @@ export default function FeedbackPage({
     }
 
     fetchData();
-  }, [unwrappedParams.id]);
+  }, [unwrappedParams.id, router]);
 
   const handleDownload = () => {
     toast.success("Feedback report downloaded successfully");
