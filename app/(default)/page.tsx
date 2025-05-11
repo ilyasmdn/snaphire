@@ -103,14 +103,21 @@ export default function LandingPage() {
             <p className="text-text/50 text-lg max-w-xl">
               Prepare for your dream job with our advanced interview simulation
               platform. Get real-time feedback and improve your interview skills
-              with SnapHire.
+              with SnapHire. Start with a{" "}
+              <span className="font-medium text-primary">3-day free trial</span>
+              .
             </p>
             <div className="flex flex-wrap gap-4">
-              <Button asChild size="lg" className="font-semibold">
-                <Link href="/sign-in">
-                  Get Started Free <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
+              <div className="relative">
+                <Button asChild size="lg" className="font-semibold">
+                  <Link href="/sign-in">
+                    Get Started Free <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+                </Button>
+                <span className="absolute -top-3 -right-3 bg-primary text-primary-foreground text-xs px-2 py-0.5 rounded-full font-medium">
+                  3-Day Free
+                </span>
+              </div>
               <Button asChild variant="outline" size="lg">
                 <Link href="/pricing">View Pricing</Link>
               </Button>
@@ -213,14 +220,16 @@ export default function LandingPage() {
           </h2>
           <p className="text-text/50 mb-8 max-w-2xl mx-auto">
             Join SnapHire today and take the first step towards landing your
-            dream job with confidence.
+            dream job with confidence. Try it free for 3 days.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
-            <Button asChild size="lg" className="font-semibold">
-              <Link href="/sign-up">
-                Start Free Trial <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
+            <div className="relative">
+              <Button asChild size="lg" className="font-semibold">
+                <Link href="/pricing">
+                  Start 3-Day Free Trial <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
             <Button asChild variant="outline" size="lg">
               <Link href="/pricing">View Plans</Link>
             </Button>
