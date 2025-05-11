@@ -119,10 +119,187 @@ export default function FeedbackPage({
 
     fetchData();
   }, [unwrappedParams.id, router]);
+  const handleDownload = async () => {
+    if (!interview || !feedback) {
+      toast.error("Feedback data is not fully loaded");
+      return;
+    }
 
-  const handleDownload = () => {
-    toast.success("Feedback report downloaded successfully");
-    // Actual download logic would go here
+    const loadingToast = toast.loading("Generating report...");
+
+    try {
+      // Dynamically import jsPDF
+      const { default: jsPDF } = await import("jspdf");
+
+      // Create a new PDF document
+      const doc = new jsPDF({
+        orientation: "portrait",
+        unit: "mm",
+        format: "a4",
+      });
+
+      // Set font size and styles
+      const titleFontSize = 18;
+      const subtitleFontSize = 16;
+      const headerFontSize = 14;
+      const normalFontSize = 11;
+      const smallFontSize = 10;
+
+      // page dimensions
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 20;
+      const usableWidth = pageWidth - margin * 2;
+
+      // Add title
+      doc.setFontSize(titleFontSize);
+      doc.setFont("helvetica", "bold");
+      doc.text(`Interview Feedback Report`, margin, margin);
+
+      // Add interview details
+      doc.setFontSize(normalFontSize);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Role: ${interview.role}`, margin, margin + 10);
+      doc.text(`Type: ${interview.type}`, margin, margin + 15);
+      doc.text(`Level: ${interview.level}`, margin, margin + 20);
+      doc.text(
+        `Date: ${new Date(interview.createdAt).toLocaleDateString()}`,
+        margin,
+        margin + 25
+      );
+
+      // Add score
+      doc.setFontSize(headerFontSize);
+      doc.setFont("helvetica", "bold");
+      doc.text(`Overall Score: ${feedback.overallScore}%`, margin, margin + 35);
+
+      // Add rating text based on score
+      doc.setFontSize(normalFontSize);
+      let rating = "Needs Improvement";
+      if (feedback.overallScore >= 80) rating = "Excellent";
+      else if (feedback.overallScore >= 60) rating = "Good";
+      doc.text(`Rating: ${rating}`, margin, margin + 40);
+
+      // Add Summary
+      doc.setFontSize(subtitleFontSize);
+      doc.setFont("helvetica", "bold");
+      doc.text("Summary", margin, margin + 50);
+
+      doc.setFontSize(normalFontSize);
+      doc.setFont("helvetica", "normal");
+
+      // Format and add the summary text with line wrapping
+      const summaryText = doc.splitTextToSize(feedback.summary, usableWidth);
+      doc.text(summaryText, margin, margin + 55);
+
+      // Calculate the height of the summary text to position the next section
+      let yPosition = margin + 55 + summaryText.length * 5;
+
+      // Add Strengths section
+      doc.setFontSize(subtitleFontSize);
+      doc.setFont("helvetica", "bold");
+      doc.text("Strengths", margin, yPosition + 10);
+
+      doc.setFontSize(normalFontSize);
+      doc.setFont("helvetica", "normal");
+
+      yPosition += 15;
+      feedback.strengths.forEach((strength, index) => {
+        const strengthText = doc.splitTextToSize(
+          `${index + 1}. ${strength}`,
+          usableWidth
+        );
+        doc.text(strengthText, margin, yPosition);
+        yPosition += strengthText.length * 5;
+      });
+
+      // Check if we need a new page for areas of improvement
+      if (yPosition > 250) {
+        doc.addPage();
+        yPosition = margin;
+      }
+
+      // Add Areas for Improvement
+      doc.setFontSize(subtitleFontSize);
+      doc.setFont("helvetica", "bold");
+      doc.text("Areas for Improvement", margin, yPosition + 10);
+
+      doc.setFontSize(normalFontSize);
+      doc.setFont("helvetica", "normal");
+
+      yPosition += 15;
+      feedback.areasOfImprovement.forEach((area, index) => {
+        const areaText = doc.splitTextToSize(
+          `${index + 1}. ${area}`,
+          usableWidth
+        );
+        doc.text(areaText, margin, yPosition);
+        yPosition += areaText.length * 5;
+      });
+
+      // Check if we need a new page for question feedback
+      if (yPosition > 250) {
+        doc.addPage();
+        yPosition = margin;
+      } else {
+        yPosition += 10;
+      }
+
+      // Add Question Feedback
+      doc.setFontSize(subtitleFontSize);
+      doc.setFont("helvetica", "bold");
+      doc.text("Question-by-Question Feedback", margin, yPosition);
+
+      doc.setFontSize(normalFontSize);
+
+      feedback.questionFeedback.forEach((qf, index) => {
+        // Check if we need a new page
+        if (yPosition > 240) {
+          doc.addPage();
+          yPosition = margin;
+        }
+
+        yPosition += 10;
+
+        // Add question
+        doc.setFont("helvetica", "bold");
+        const questionText = doc.splitTextToSize(
+          `${index + 1}. ${qf.question}`,
+          usableWidth
+        );
+        doc.text(questionText, margin, yPosition);
+        yPosition += questionText.length * 5;
+
+        // Add score
+        doc.setFont("helvetica", "normal");
+        doc.text(`Score: ${qf.score}%`, margin, yPosition);
+        yPosition += 5;
+
+        // Add feedback
+        const feedbackText = doc.splitTextToSize(qf.comments, usableWidth);
+        doc.text(feedbackText, margin, yPosition);
+        yPosition += feedbackText.length * 5 + 5;
+      });
+
+      // Add footer
+      const timestamp = new Date().toLocaleString();
+      doc.setFontSize(smallFontSize);
+      doc.setTextColor(100, 100, 100);
+      doc.text(`Generated by SnapHire on ${timestamp}`, margin, 285);
+
+      // Save the PDF with filename based on interview role and date
+      const filename = `Interview_Feedback_${interview.role.replace(
+        /\s+/g,
+        "_"
+      )}_${new Date().toISOString().split("T")[0]}.pdf`;
+      doc.save(filename);
+
+      toast.dismiss(loadingToast);
+      toast.success("Feedback report downloaded successfully");
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      toast.dismiss(loadingToast);
+      toast.error("Failed to generate report");
+    }
   };
 
   // Function to render score as stars
