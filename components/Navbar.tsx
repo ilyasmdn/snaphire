@@ -6,6 +6,7 @@ import { Button } from "./ui/button";
 import { Moon, Sun } from "lucide-react";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { LandingMobileNav } from "./LandingMobileNav";
 
 const Navbar = () => {
   const [theme, setTheme] = useState("dark");
@@ -52,7 +53,6 @@ const Navbar = () => {
         />
         SnapHire
       </Link>
-
       <ul className="hidden md:flex items-center gap-6">
         {navLinks.map((link) => {
           const isActive = pathname === link.href;
@@ -69,8 +69,7 @@ const Navbar = () => {
             </li>
           );
         })}
-      </ul>
-
+      </ul>{" "}
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
@@ -85,14 +84,15 @@ const Navbar = () => {
           )}
         </Button>
 
-        <div className="flex items-center gap-2">
-          <Button asChild variant="ghost" className="hidden md:inline-flex">
+        <div className="hidden md:flex items-center gap-2">
+          <Button asChild variant="ghost" className="inline-flex">
             <Link href="/sign-in">Sign In</Link>
           </Button>
           <Button asChild>
             <Link href="/sign-up">Sign Up</Link>
           </Button>
         </div>
+        <LandingMobileNav />
       </div>
     </nav>
   );

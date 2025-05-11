@@ -30,7 +30,7 @@ export function MobileNav() {
       </Button>
 
       {isOpen && (
-        <div className="fixed inset-0 top-14 z-50 bg-background animate-in slide-in-from-top-5">
+        <div className="fixed inset-0 top-14 z-50 bg-background/95 backdrop-blur-sm animate-in slide-in-from-top-5">
           <nav className="p-4 space-y-2">
             {sidebarLinks.map((link: NavLink) => {
               const isActive = pathname === link.href;
