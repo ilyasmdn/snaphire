@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     "technical interview",
     "behavioral interview",
   ],
-  metadataBase: new URL("https://snaphire.com"),
+  metadataBase: new URL("https://snaphire.pro"),
   authors: [{ name: "SnapHire Team", url: "https://snaphire.pro" }],
   creator: "SnapHire",
   publisher: "SnapHire",

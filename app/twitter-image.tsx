@@ -31,7 +31,7 @@ export default async function Image() {
       >
         <div style={{ display: "flex", alignItems: "center" }}>
           <img
-            src="https://snaphire.com/snaphire.png"
+            src="https://snaphire.pro/snaphire.png"
             alt="SnapHire Logo"
             width={180}
             height={180}
