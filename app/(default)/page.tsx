@@ -9,6 +9,7 @@ import {
   Brain,
   BarChart,
 } from "lucide-react";
+import ProductHunt from "@/components/ProductHunt";
 
 export const metadata: Metadata = {
   title: "SnapHire - AI-Powered Interview Practice Platform",
@@ -123,6 +124,7 @@ export default function LandingPage() {
                   </div>
                 ))}
               </div>
+              <ProductHunt />
             </div>
           </div>
 
