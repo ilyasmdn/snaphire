@@ -90,9 +90,7 @@ export function SubscriptionManagement() {
           }
 
           const data = await response.json();
-          const interviews = data.interviews || [];
-
-          // Filter interviews from the current month
+          const interviews = data.interviews || []; // Filter interviews from the current month
           const now = new Date();
           const firstDayOfMonth = new Date(
             now.getFullYear(),
@@ -102,7 +100,11 @@ export function SubscriptionManagement() {
 
           const thisMonthsInterviews = interviews.filter((interview: any) => {
             const interviewDate = new Date(interview.createdAt);
-            return interviewDate >= firstDayOfMonth;
+
+            // Only count interviews that:
+            // 1. Were created this month
+            // 2. Did NOT use a one-time purchase (exclude usedPurchase === true)
+            return interviewDate >= firstDayOfMonth && !interview.usedPurchase;
           });
 
           setMonthlyInterviewsUsed(thisMonthsInterviews.length);
@@ -199,7 +201,7 @@ export function SubscriptionManagement() {
                   ) : (
                     <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700">
                       <CheckCircle2 className="mr-1 h-3 w-3" />
-                        Inactive
+                      Inactive
                     </span>
                   )}
                 </div>

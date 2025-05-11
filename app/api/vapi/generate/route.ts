@@ -29,7 +29,8 @@ export async function POST(req: Request) {
       
       Thank you! <3
   `,
-    });
+    }); // Check if user has an active one-time purchase
+    const purchaseUsed = await findActivePurchase(userid);
 
     const interview = {
       role,
@@ -39,13 +40,19 @@ export async function POST(req: Request) {
       userId: userid,
       finalized: true,
       createdAt: new Date().toISOString(),
+      // Track if this interview used a one-time purchase
+      usedPurchase: purchaseUsed ? true : false,
+      // If a purchase was used, store its ID for tracking
+      purchaseId: purchaseUsed?.id || null,
     };
 
     // Save the interview
     await db.collection("interviews").add(interview);
 
-    // Check if user has an active one-time purchase and update it
-    await updateUserPurchase(userid);
+    // If a purchase was found, update its usage count
+    if (purchaseUsed) {
+      await updatePurchaseUsage(purchaseUsed.id);
+    }
 
     return Response.json({ success: true }, { status: 200 });
   } catch (error) {
@@ -55,10 +62,20 @@ export async function POST(req: Request) {
 }
 
 /**
- * Checks if the user has an active one-time purchase and updates the interviewsUsed count
+ * Finds an active one-time purchase for the user
  * @param userId The ID of the user
+ * @returns The purchase object if found, null otherwise
  */
-async function updateUserPurchase(userId: string): Promise<void> {
+interface Purchase {
+  id: string;
+  type: "single" | "pack";
+  interviewCount: number;
+  interviewsUsed: number;
+  purchaseDate: string;
+  expiryDate: string;
+}
+
+async function findActivePurchase(userId: string): Promise<Purchase | null> {
   try {
     // Query for active one-time purchases
     const purchasesSnapshot = await db
@@ -68,21 +85,22 @@ async function updateUserPurchase(userId: string): Promise<void> {
 
     if (purchasesSnapshot.empty) {
       console.log(`No purchases found for user ${userId}`);
-      return;
+      return null;
     }
 
     // Sort purchases by purchaseDate to use the oldest active purchase first
     const purchases = purchasesSnapshot.docs
-      .map((doc) => ({
-        id: doc.id,
-        ...(doc.data() as {
-          type: "single" | "pack";
-          interviewCount: number;
-          interviewsUsed: number;
-          purchaseDate: string;
-          expiryDate: string;
-        }),
-      }))
+      .map((doc) => {
+        const data = doc.data() as Purchase;
+        return {
+          id: doc.id,
+          type: data.type,
+          interviewCount: data.interviewCount,
+          interviewsUsed: data.interviewsUsed,
+          purchaseDate: data.purchaseDate,
+          expiryDate: data.expiryDate,
+        };
+      })
       .filter(
         (purchase) =>
           // Check if purchase is active (not expired and has remaining interviews)
@@ -97,25 +115,35 @@ async function updateUserPurchase(userId: string): Promise<void> {
 
     if (purchases.length === 0) {
       console.log(`No active purchases found for user ${userId}`);
-      return;
+      return null;
     }
 
-    // Get the oldest active purchase to update
-    const purchaseToUpdate = purchases[0];
-    console.log(`Updating purchase ${purchaseToUpdate.id} for user ${userId}`);
+    // Return the oldest active purchase
+    return purchases[0];
+  } catch (error) {
+    console.error(`Error finding purchases for user ${userId}:`, error);
+    return null;
+  }
+}
+
+/**
+ * Updates the usage count for a purchase
+ * @param purchaseId The ID of the purchase to update
+ */
+async function updatePurchaseUsage(purchaseId: string): Promise<void> {
+  try {
+    console.log(`Updating purchase ${purchaseId}`);
 
     // Update the purchase with an incremented interviewsUsed count
     await db
       .collection("purchases")
-      .doc(purchaseToUpdate.id)
+      .doc(purchaseId)
       .update({
         interviewsUsed: FieldValue.increment(1),
       });
 
-    console.log(
-      `Successfully updated purchase ${purchaseToUpdate.id} for user ${userId}`
-    );
+    console.log(`Successfully updated purchase ${purchaseId}`);
   } catch (error) {
-    console.error(`Error updating purchase for user ${userId}:`, error);
+    console.error(`Error updating purchase ${purchaseId}:`, error);
   }
 }

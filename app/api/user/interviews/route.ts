@@ -23,9 +23,7 @@ export async function GET() {
 
     if (interviewsSnapshot.empty) {
       return NextResponse.json({ interviews: [] });
-    }
-
-    // Map the documents to include only the specified fields
+    } // Map the documents to include only the specified fields
     const interviews = interviewsSnapshot.docs.map((doc) => {
       const data = doc.data();
       return {
@@ -39,6 +37,9 @@ export async function GET() {
         createdAt: data.createdAt?.toDate?.()
           ? data.createdAt.toDate().toISOString()
           : data.createdAt,
+        // Include whether this interview used a one-time purchase
+        usedPurchase: data.usedPurchase || false,
+        purchaseId: data.purchaseId || null,
       };
     });
 
