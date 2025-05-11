@@ -18,6 +18,9 @@ export async function middleware(request: NextRequest) {
     "/settings",
   ];
 
+  // Routes that can be accessed with either a subscription or purchased interviews
+  const purchasableInterviewPaths = ["/interviews", "/generate-interview"];
+
   // Premium routes mapped to subscription tiers from pricing page
   // Dashboard and settings are now excluded from premium routes to allow free access
   const premiumRoutes = {
@@ -86,6 +89,46 @@ export async function middleware(request: NextRequest) {
     console.log(`Requires subscription: ${requiresSubscription}`);
 
     if (requiresSubscription) {
+      // Check if this is an interview path that can be accessed with purchases
+      const isInterviewPath = purchasableInterviewPaths.some((path) =>
+        pathname.startsWith(path)
+      );
+
+      if (isInterviewPath) {
+        // Check for available interview purchases
+        const purchasesResponse = await fetch(
+          new URL("/api/user/purchases", request.url),
+          {
+            headers: {
+              Cookie: `session=${token}`,
+            },
+          }
+        );
+
+        console.log(`Purchases response status: ${purchasesResponse.status}`);
+
+        if (purchasesResponse.ok) {
+          const { purchases } = await purchasesResponse.json();
+          const availablePurchases =
+            purchases?.filter(
+              (p: any) => p.isActive && p.interviewCount > p.interviewsUsed
+            ) || [];
+
+          console.log(
+            `Available interview purchases: ${availablePurchases.length}`
+          );
+
+          if (availablePurchases.length > 0) {
+            // User has available interviews from purchases, allow access
+            console.log(
+              "User has available interview purchases, allowing access"
+            );
+            return NextResponse.next();
+          }
+        }
+      }
+
+      // If no valid purchases or not an interview path, fall back to subscription check
       // Get user's subscription - explicitly adding the session cookie to the request
       const subscriptionResponse = await fetch(
         new URL("/api/user/subscription", request.url),

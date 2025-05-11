@@ -26,10 +26,124 @@ export default function GenerateInterviewPage() {
   const [userId, setUserId] = useState<string | null>(null);
   const { canConductInterview } = useFeatureAccess();
 
+  // Define all event handlers first before useEffect
+  const handleCallStart = () => {
+    setIsCallActive(true);
+  };
+
+  const handleEndCall = async () => {
+    setIsCallActive(false);
+
+    try {
+      vapi.stop();
+    } catch (error) {
+      console.error("Error stopping call:", error);
+    }
+
+    try {
+      router.push(`/interviews`);
+    } catch (error) {
+      console.error("Failed to generate interview:", error);
+    }
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, "0")}:${secs
+      .toString()
+      .padStart(2, "0")}`;
+  };
+
+  const handleStartCall = async () => {
+    if (!userId) {
+      toast.error("Please sign in to use this feature");
+      router.push("/sign-in?redirect=/generate-interview");
+      return;
+    }
+
+    setIsInitiatingCall(true);
+    try {
+      // @ts-ignore
+      await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
+        variableValues: {
+          userid: userId,
+        },
+      });
+    } catch (error) {
+      console.error("Failed to start Vapi call:", error);
+      toast.error("Failed to start call. Please try again.");
+    } finally {
+      setIsInitiatingCall(false);
+    }
+  };
+
+  // Authentication check and user fetch
+  useEffect(() => {
+    async function checkAuth() {
+      setIsLoading(true);
+      try {
+        const user = await getCurrentUser();
+        if (!user) {
+          toast.error("Please sign in to use this feature");
+          router.push("/sign-in?redirect=/generate-interview");
+          return;
+        }
+        setUserId(user.id);
+      } catch (error) {
+        console.error("Authentication error:", error);
+        toast.error("Authentication error. Please sign in again.");
+        router.push("/sign-in?redirect=/generate-interview");
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    checkAuth();
+  }, [router]);
+
+  // Set up call event handlers
+  useEffect(() => {
+    const handleMessage = (message: SavedMessage) => {
+      setMessages((prev) => [...prev, message]);
+    };
+
+    const onStartCall = () => {
+      setIsCallActive(true);
+    };
+
+    const onError = (error: any) => {
+      console.error("Error from VAPI:", error);
+    };
+
+    vapi.on("call-start", onStartCall);
+    vapi.on("message", handleMessage);
+    vapi.on("call-end", handleEndCall);
+    vapi.on("error", onError);
+
+    return () => {
+      vapi.off("call-start", onStartCall);
+      vapi.off("message", handleMessage);
+      vapi.off("call-end", handleEndCall);
+      vapi.off("error", onError);
+    };
+  }, []);
+
+  // Timer for call duration
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isCallActive) {
+      interval = setInterval(() => {
+        setCallDuration((prev) => prev + 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isCallActive]);
+
   // Check if user has access to interview functionality
   const hasInterviewAccess = canConductInterview();
 
-  // If user doesn't have interview access, show the access restriction UI
+  // Render the access restricted UI if user doesn't have access
   if (!hasInterviewAccess) {
     return (
       <div className="container py-10">
@@ -63,117 +177,6 @@ export default function GenerateInterviewPage() {
       </div>
     );
   }
-
-  // Authentication check and user fetch
-  useEffect(() => {
-    async function checkAuth() {
-      setIsLoading(true);
-      try {
-        const user = await getCurrentUser();
-        if (!user) {
-          toast.error("Please sign in to use this feature");
-          router.push("/sign-in?redirect=/generate-interview");
-          return;
-        }
-        setUserId(user.id);
-      } catch (error) {
-        console.error("Authentication error:", error);
-        toast.error("Authentication error. Please sign in again.");
-        router.push("/sign-in?redirect=/generate-interview");
-      } finally {
-        setIsLoading(false);
-      }
-    }
-
-    checkAuth();
-  }, [router]);
-
-  const handleCallStart = () => {
-    setIsCallActive(true);
-  };
-
-  const handleEndCall = async () => {
-    setIsCallActive(false);
-
-    try {
-      vapi.stop();
-    } catch (error) {
-      console.error("Error stopping call:", error);
-    }
-
-    try {
-      router.push(`/interviews`);
-    } catch (error) {
-      console.error("Failed to generate interview:", error);
-    }
-  };
-
-  useEffect(() => {
-    const handleMessage = (message: SavedMessage) => {
-      setMessages((prev) => [...prev, message]);
-    };
-
-    const onStartCall = () => {
-      setIsCallActive(true);
-    };
-
-    const onError = (error: any) => {
-      console.error("Error from VAPI:", error);
-    };
-
-    vapi.on("call-start", onStartCall);
-    vapi.on("message", handleMessage);
-    vapi.on("call-end", handleEndCall);
-    vapi.on("error", onError);
-
-    return () => {
-      vapi.off("call-start", onStartCall);
-      vapi.off("message", handleMessage);
-      vapi.off("call-end", handleEndCall);
-      vapi.off("error", onError);
-    };
-  }, []);
-
-  useEffect(() => {
-    let interval: NodeJS.Timeout;
-    if (isCallActive) {
-      interval = setInterval(() => {
-        setCallDuration((prev) => prev + 1);
-      }, 1000);
-    }
-    return () => clearInterval(interval);
-  }, [isCallActive]);
-
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins.toString().padStart(2, "0")}:${secs
-      .toString()
-      .padStart(2, "0")}`;
-  };
-
-  const handleStartCall = async () => {
-    if (!userId) {
-      toast.error("Please sign in to use this feature");
-      router.push("/sign-in?redirect=/generate-interview");
-      return;
-    }
-
-    setIsInitiatingCall(true);
-    try {
-      // @ts-ignore
-      await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
-        variableValues: {
-          userid: userId,
-        },
-      });
-    } catch (error) {
-      console.error("Failed to start Vapi call:", error);
-      toast.error("Failed to start call. Please try again.");
-    } finally {
-      setIsInitiatingCall(false);
-    }
-  };
 
   return (
     <div className="container mx-auto p-6 max-w-2xl">
