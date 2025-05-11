@@ -24,13 +24,13 @@ export const metadata: Metadata = {
     "behavioral interview questions",
   ],
   alternates: {
-    canonical: "https://snaphire.com",
+    canonical: "https://snaphire.pro",
   },
   openGraph: {
     title: "SnapHire - Practice Interviews with AI and Get Expert Feedback",
     description:
       "Prepare for your job interviews with our AI-powered platform. Get personalized feedback and ace your next interview with confidence.",
-    url: "https://snaphire.com",
+    url: "https://snaphire.pro",
     type: "website",
   },
 };
