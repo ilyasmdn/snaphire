@@ -70,6 +70,7 @@ export default function GenerateInterviewPage() {
           userid: userId,
         },
       });
+      handleCallStart();
     } catch (error) {
       console.error("Failed to start Vapi call:", error);
       toast.error("Failed to start call. Please try again.");
