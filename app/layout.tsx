@@ -40,14 +40,14 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "https://snaphire.pro/favicon.ico", sizes: "any" },
+      { url: "https://snaphire.pro/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "https://snaphire.pro/favicon-32x32.png", sizes: "32x32", type: "image/png" },
     ],
     apple: [
-      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+      { url: "https://snaphire.pro/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
-    other: [{ rel: "manifest", url: "/site.webmanifest" }],
+    other: [{ rel: "manifest", url: "https://snaphire.pro/site.webmanifest" }],
   },
   openGraph: {
     type: "website",
@@ -73,7 +73,7 @@ export const metadata: Metadata = {
     creator: "@snaphire",
     description:
       "Master your interview skills with SnapHire's AI-powered platform",
-    images: ["/favicon-32x32.png"],
+    images: ["https://snaphire.pro/favicon-32x32.png"],
   },
 };
 
