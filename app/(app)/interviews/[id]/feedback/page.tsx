@@ -19,7 +19,6 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { notFound } from "next/navigation";
 import { useRouter } from "next/navigation";
 
 interface Interview {

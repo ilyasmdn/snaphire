@@ -1,3 +1,4 @@
+import { Metadata } from "next";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import {
@@ -8,6 +9,31 @@ import {
   Brain,
   BarChart,
 } from "lucide-react";
+
+export const metadata: Metadata = {
+  title: "SnapHire - AI-Powered Interview Practice Platform",
+  description:
+    "Prepare for your next job interview with SnapHire's AI-powered mock interviews. Get real-time feedback, expert insights, and improve your chances of landing your dream job.",
+  keywords: [
+    "interview preparation",
+    "mock interviews",
+    "AI interview practice",
+    "interview feedback",
+    "job interview preparation",
+    "technical interview practice",
+    "behavioral interview questions",
+  ],
+  alternates: {
+    canonical: "https://snaphire.com",
+  },
+  openGraph: {
+    title: "SnapHire - Practice Interviews with AI and Get Expert Feedback",
+    description:
+      "Prepare for your job interviews with our AI-powered platform. Get personalized feedback and ace your next interview with confidence.",
+    url: "https://snaphire.com",
+    type: "website",
+  },
+};
 
 export default function LandingPage() {
   const features = [
@@ -105,7 +131,9 @@ export default function LandingPage() {
             <div className="relative bg-gradient-to-b from-primary/10 to-transparent p-8 rounded-xl">
               <img
                 src="/snaphire.png"
-                alt="SnapHire Interview Practice"
+                alt="SnapHire AI-Powered Interview Practice Platform"
+                width={500}
+                height={500}
                 className="w-full h-auto rounded-lg shadow-lg"
               />
             </div>

@@ -321,7 +321,9 @@ export default function SettingsPage() {
                   onClick={() =>
                     section.title === "Feedback"
                       ? handleFeedbackSubmit()
-                      : toast.warning("This feature will be activated in the next update!")
+                      : toast.warning(
+                          "This feature will be activated in the next update!"
+                        )
                   }
                   disabled={
                     section.title === "Feedback" && isSubmittingFeedback

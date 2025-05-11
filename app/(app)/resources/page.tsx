@@ -2,6 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Metadata } from "next";
 import {
   Book,
   Bookmark,
@@ -14,6 +15,19 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useFeatureAccess } from "@/lib/hooks/use-feature-access";
+
+export const metadata: Metadata = {
+  title: "Learning Resources | SnapHire",
+  description:
+    "Access interview guides, templates, and tutorial videos to help you prepare for your next job interview and improve your chances of success.",
+  keywords: [
+    "interview guides",
+    "resume templates",
+    "interview tips",
+    "career resources",
+    "job preparation materials",
+  ],
+};
 
 interface Resource {
   title: string;
