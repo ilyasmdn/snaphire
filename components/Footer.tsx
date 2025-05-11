@@ -87,7 +87,7 @@ export function Footer() {
                 >
                   Help Center
                 </Link>
-              </li>
+              </li>{" "}
               <li>
                 <Link
                   href="/contact"
