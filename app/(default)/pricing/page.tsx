@@ -10,10 +10,10 @@ import { useSearchParams } from "next/navigation";
 const subscriptionTiers = [
   {
     name: "Starter",
-    price: "12",
+    price: "8",
     description: "For students or job seekers just starting out",
     features: [
-      "5 AI-powered mock interviews per month",
+      "15 AI-powered mock interviews per month",
       "Basic performance analytics",
       "Standard question bank access",
       "Email support",
@@ -24,7 +24,7 @@ const subscriptionTiers = [
   },
   {
     name: "Pro",
-    price: "24",
+    price: "15",
     description: "For active job seekers needing advanced prep",
     features: [
       "Unlimited AI-powered mock interviews",
@@ -59,7 +59,7 @@ const subscriptionTiers = [
 const payPerInterviewTiers = [
   {
     name: "One-Time Interview",
-    price: "5",
+    price: "1",
     description: "Perfect for a quick mock interview experience",
     features: [
       "1 full AI-powered interview",
@@ -72,7 +72,7 @@ const payPerInterviewTiers = [
   },
   {
     name: "5-Interview Pack",
-    price: "20",
+    price: "4",
     description: "Best value for focused preparation",
     features: [
       "5 AI-powered interviews",

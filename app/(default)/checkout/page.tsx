@@ -27,27 +27,26 @@ const PLAN_DATA: Record<
   single: {
     title: "One-Time Interview",
     description: "Perfect for a quick mock interview experience",
-    price: "$5",
+    price: "$1",
   },
   pack: {
     title: "5-Interview Pack",
     description: "Best value for focused preparation",
-    price: "$20",
+    price: "$4",
   },
   starter: {
     title: "Starter Subscription",
     description: "For students or job seekers just starting out",
-    price: "$12/month",
+    price: "$8/month",
   },
   pro: {
     title: "Pro Subscription",
     description: "For active job seekers needing advanced prep",
-    price: "$24/month",
+    price: "$15/month",
   },
 };
 
 function CheckoutContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
   const [userEmail, setUserEmail] = useState<string | null>(null);

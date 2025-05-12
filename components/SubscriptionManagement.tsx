@@ -34,7 +34,7 @@ const PLAN_FEATURES: Record<SubscriptionPlan, PlanFeature[]> = {
     { name: "Email support", included: false },
   ],
   starter: [
-    { name: "5 AI-powered mock interviews per month", included: true },
+    { name: "15 AI-powered mock interviews per month", included: true },
     { name: "Basic performance analytics", included: true },
     { name: "Standard question bank access", included: true },
     { name: "Email support", included: true },
@@ -60,8 +60,8 @@ const PLAN_FEATURES: Record<SubscriptionPlan, PlanFeature[]> = {
 
 const PLAN_PRICE: Record<SubscriptionPlan, string> = {
   free: "$0",
-  starter: "$12",
-  pro: "$24",
+  starter: "$8",
+  pro: "$15",
   teams: "Custom",
   unknown: "",
 };
@@ -267,19 +267,19 @@ export function SubscriptionManagement() {
                             <>
                               <span>{monthlyInterviewsUsed} used</span>
                               <span className="mx-1">/</span>
-                              <span>5 included</span>
+                              <span>15 included</span>
                             </>
                           )}
                         </p>
                         <span
                           className={`text-xs px-1.5 py-0.5 rounded-full font-medium 
                             ${
-                              monthlyInterviewsUsed >= 5
+                              monthlyInterviewsUsed >= 15
                                 ? "bg-amber-100 text-amber-700"
                                 : "bg-green-100 text-green-700"
                             }`}
                         >
-                          {5 - monthlyInterviewsUsed} remaining
+                          {15 - monthlyInterviewsUsed} remaining
                         </span>
                       </div>
                       <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
