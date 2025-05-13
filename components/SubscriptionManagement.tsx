@@ -361,9 +361,7 @@ export function SubscriptionManagement() {
                     </div>
                   </div>
                 </div>
-              </div>
-
-              <div className="flex-1 bg-muted/40 rounded-lg p-4">
+              </div>              <div className="flex-1 bg-muted/40 rounded-lg p-4">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-full bg-primary/10">
                     <Timer className="h-5 w-5 text-primary" />
@@ -371,9 +369,12 @@ export function SubscriptionManagement() {
                   <div>
                     <div className="text-sm text-muted-foreground">
                       Remaining Interviews
-                    </div>
-                    <div className="text-2xl font-bold">
-                      {remainingInterviews}
+                    </div>                    <div className="text-2xl font-bold">
+                      {remainingInterviews === Infinity ? (
+                        <span className="text-primary">∞</span>
+                      ) : (
+                        remainingInterviews
+                      )}
                     </div>
                   </div>
                 </div>
@@ -391,19 +392,31 @@ export function SubscriptionManagement() {
                           <div className="font-medium">
                             {purchase.type === "single"
                               ? "Single Interview"
-                              : "5-Interview Pack"}
+                              : purchase.type === "pack"
+                              ? "5-Interview Pack"
+                              : purchase.type === "lifetime"
+                              ? "Lifetime Interviews"
+                              : "Interview Package"}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            {purchase.interviewCount - purchase.interviewsUsed}{" "}
-                            of {purchase.interviewCount} remaining
+                            {purchase.type === "lifetime" ? (
+                              <span className="text-primary font-medium">Unlimited interviews</span>
+                            ) : (
+                              <>
+                                {purchase.interviewCount - purchase.interviewsUsed}{" "}
+                                of {purchase.interviewCount} remaining
+                              </>
+                            )}
                           </div>
                         </div>
                         <div className="text-right">
                           <div className="text-sm text-muted-foreground">
-                            Expires
+                            {purchase.type === "lifetime" ? "Valid until" : "Expires"}
                           </div>
                           <div className="font-medium">
-                            {formatDate(purchase.expiryDate)}
+                            {purchase.type === "lifetime" 
+                              ? "Forever" 
+                              : formatDate(purchase.expiryDate)}
                           </div>
                         </div>
                       </div>
@@ -418,6 +431,30 @@ export function SubscriptionManagement() {
                     </div>
                   ))}
                 </div>
+
+                {/* Lifetime Interviews Promotional Banner */}
+                {!activePurchases.some(p => p.type === "lifetime") && (
+                  <div className="mt-6 p-5 border border-primary/20 bg-primary/5 rounded-lg">
+                    <div className="flex items-start gap-4">
+                      <div className="p-2 rounded-full bg-primary/20">
+                        <Timer className="h-6 w-6 text-primary" />
+                      </div>
+                      <div className="flex-1">
+                        <h4 className="text-lg font-medium">Lifetime Unlimited Interviews</h4>
+                        <p className="mt-1 text-sm text-muted-foreground">
+                          Get unlimited interviews forever for a one-time payment of $20. Never worry about running out or renewals again!
+                        </p>
+                        <div className="mt-4">
+                          <Button asChild>
+                            <Link href="/checkout?plan=lifetime">
+                              Get Lifetime Access
+                            </Link>
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             ) : (
               <div className="text-center py-6">
@@ -428,11 +465,26 @@ export function SubscriptionManagement() {
                 <p className="text-muted-foreground mb-4">
                   You don't have any active interview purchases
                 </p>
-                <Button asChild>
-                  <Link href="/pricing?tab=pay-per-interview">
-                    Buy Interviews
-                  </Link>
-                </Button>
+                <div className="space-y-4">
+                  <Button asChild className="w-full sm:w-auto">
+                    <Link href="/pricing?tab=pay-per-interview">
+                      Buy Individual Interviews
+                    </Link>
+                  </Button>
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">or</span>
+                    </div>
+                  </div>
+                  <Button variant="outline" asChild className="w-full sm:w-auto">
+                    <Link href="/checkout?plan=lifetime">
+                      Get Lifetime Access ($20)
+                    </Link>
+                  </Button>
+                </div>
               </div>
             )}
 

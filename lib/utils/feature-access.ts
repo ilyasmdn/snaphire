@@ -140,6 +140,11 @@ export function hasInterviewAccess(
     return true;
   }
 
+  // If remainingInterviews is Infinity (from lifetime purchase), they have access
+  if (remainingInterviews === Infinity) {
+    return true;
+  }
+
   // Otherwise, check if they have remaining purchased interviews
   return remainingInterviews > 0;
 }

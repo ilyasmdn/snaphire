@@ -11,11 +11,12 @@ import { onAuthStateChanged } from "firebase/auth";
 import Link from "next/link";
 import { useSubscription } from "@/lib/hooks/use-subscription";
 
-type PlanId = "single" | "pack" | "starter" | "pro";
+type PlanId = "single" | "pack" | "lifetime" | "starter" | "pro";
 
 const VARIANTS: Record<PlanId, string> = {
   single: process.env.NEXT_PUBLIC_LEMONSQUEEZY_SINGLE_INTERVIEW_VARIANT_ID!,
   pack: process.env.NEXT_PUBLIC_LEMONSQUEEZY_PACK_VARIANT_ID!,
+  lifetime: process.env.NEXT_PUBLIC_LEMONSQUEEZY_LIFETIME_VARIANT_ID!,
   starter: process.env.NEXT_PUBLIC_LEMONSQUEEZY_STARTER_VARIANT_ID!,
   pro: process.env.NEXT_PUBLIC_LEMONSQUEEZY_PRO_VARIANT_ID!,
 };
@@ -33,6 +34,11 @@ const PLAN_DATA: Record<
     title: "5-Interview Pack",
     description: "Best value for focused preparation",
     price: "$4",
+  },
+  lifetime: {
+    title: "Lifetime Unlimited Interviews",
+    description: "Unlimited interviews forever with a one-time payment",
+    price: "$20",
   },
   starter: {
     title: "Starter Subscription",

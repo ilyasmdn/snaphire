@@ -84,6 +84,21 @@ const payPerInterviewTiers = [
     href: "/checkout?plan=pack",
     highlighted: true,
   },
+  {
+    name: "Lifetime Access",
+    price: "20",
+    description: "Unlimited interviews forever with a one-time payment",
+    features: [
+      "Unlimited AI-powered interviews",
+      "Advanced performance analytics",
+      "Advanced feedback reports",
+      "Never expires",
+      "No recurring billing"
+    ],
+    cta: "Get Lifetime Access",
+    href: "/checkout?plan=lifetime",
+    highlighted: false,
+  },
 ];
 
 function PricingContent() {

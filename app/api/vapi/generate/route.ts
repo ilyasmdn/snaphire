@@ -68,7 +68,7 @@ export async function POST(req: Request) {
  */
 interface Purchase {
   id: string;
-  type: "single" | "pack";
+  type: "single" | "pack" | "lifetime";
   interviewCount: number;
   interviewsUsed: number;
   purchaseDate: string;
@@ -86,9 +86,7 @@ async function findActivePurchase(userId: string): Promise<Purchase | null> {
     if (purchasesSnapshot.empty) {
       console.log(`No purchases found for user ${userId}`);
       return null;
-    }
-
-    // Sort purchases by purchaseDate to use the oldest active purchase first
+    }    // Sort purchases by purchaseDate to use the oldest active purchase first
     const purchases = purchasesSnapshot.docs
       .map((doc) => {
         const data = doc.data() as Purchase;
@@ -103,15 +101,22 @@ async function findActivePurchase(userId: string): Promise<Purchase | null> {
       })
       .filter(
         (purchase) =>
-          // Check if purchase is active (not expired and has remaining interviews)
+          // Check if purchase is active (not expired) and:
+          // For lifetime: always valid regardless of usage count
+          // For others: check if there are remaining interviews
           new Date(purchase.expiryDate) > new Date() &&
-          (purchase.interviewsUsed || 0) < purchase.interviewCount
+          (purchase.type === "lifetime" || 
+           (purchase.interviewsUsed || 0) < purchase.interviewCount)
       )
-      .sort(
-        (a, b) =>
-          new Date(a.purchaseDate).getTime() -
-          new Date(b.purchaseDate).getTime()
-      );
+      // Prioritize lifetime purchases first, then sort by purchase date (oldest first)
+      .sort((a, b) => {
+        // Lifetime purchases should come first
+        if (a.type === "lifetime" && b.type !== "lifetime") return -1;
+        if (a.type !== "lifetime" && b.type === "lifetime") return 1;
+        
+        // Otherwise sort by purchase date (oldest first)
+        return new Date(a.purchaseDate).getTime() - new Date(b.purchaseDate).getTime();
+      });
 
     if (purchases.length === 0) {
       console.log(`No active purchases found for user ${userId}`);
@@ -134,13 +139,28 @@ async function updatePurchaseUsage(purchaseId: string): Promise<void> {
   try {
     console.log(`Updating purchase ${purchaseId}`);
 
-    // Update the purchase with an incremented interviewsUsed count
-    await db
-      .collection("purchases")
-      .doc(purchaseId)
-      .update({
-        interviewsUsed: FieldValue.increment(1),
-      });
+    // First check if this is a lifetime purchase
+    const purchaseRef = db.collection("purchases").doc(purchaseId);
+    const purchaseDoc = await purchaseRef.get();
+    
+    if (!purchaseDoc.exists) {
+      console.error(`Purchase ${purchaseId} not found`);
+      return;
+    }
+    
+    const purchaseData = purchaseDoc.data();
+    
+    // For lifetime purchases, we don't need to increment the usage count
+    // since they have unlimited interviews
+    if (purchaseData && purchaseData.type === "lifetime") {
+      console.log(`Purchase ${purchaseId} is a lifetime purchase, skipping usage increment`);
+      return;
+    }
+
+    // For regular purchases, update the purchase with an incremented interviewsUsed count
+    await purchaseRef.update({
+      interviewsUsed: FieldValue.increment(1),
+    });
 
     console.log(`Successfully updated purchase ${purchaseId}`);
   } catch (error) {

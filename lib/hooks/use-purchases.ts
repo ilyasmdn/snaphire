@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 
 export interface Purchase {
   id: string;
-  type: "single" | "pack";
+  type: "single" | "pack" | "lifetime";
   interviewCount: number;
   interviewsUsed: number;
   purchaseDate: string;
@@ -60,9 +60,11 @@ export function usePurchases() {
 
   const getExpiredPurchases = () => {
     return purchases.filter((purchase) => !purchase.isActive);
-  };
-
-  const getTotalRemainingInterviews = () => {
+  };  const getTotalRemainingInterviews = () => {
+    // If user has lifetime purchase, return Infinity
+    if (getActivePurchases().some(purchase => purchase.type === "lifetime")) {
+      return Infinity; // JavaScript Infinity value
+    }
     return getActivePurchases().reduce(
       (total, purchase) =>
         total + (purchase.interviewCount - purchase.interviewsUsed),
