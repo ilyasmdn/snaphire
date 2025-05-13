@@ -286,7 +286,7 @@ export function SubscriptionManagement() {
                         <div
                           className="bg-primary h-1.5 rounded-full transition-all"
                           style={{
-                            width: `${(monthlyInterviewsUsed / 5) * 100}%`,
+                            width: `${(monthlyInterviewsUsed / 15) * 100}%`,
                           }}
                         ></div>
                       </div>
