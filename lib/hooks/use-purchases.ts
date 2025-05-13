@@ -60,9 +60,10 @@ export function usePurchases() {
 
   const getExpiredPurchases = () => {
     return purchases.filter((purchase) => !purchase.isActive);
-  };  const getTotalRemainingInterviews = () => {
+  };
+  const getTotalRemainingInterviews = () => {
     // If user has lifetime purchase, return Infinity
-    if (getActivePurchases().some(purchase => purchase.type === "lifetime")) {
+    if (getActivePurchases().some((purchase) => purchase.type === "lifetime")) {
       return Infinity; // JavaScript Infinity value
     }
     return getActivePurchases().reduce(

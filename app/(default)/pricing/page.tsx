@@ -93,7 +93,7 @@ const payPerInterviewTiers = [
       "Advanced performance analytics",
       "Advanced feedback reports",
       "Never expires",
-      "No recurring billing"
+      "No recurring billing",
     ],
     cta: "Get Lifetime Access",
     href: "/checkout?plan=lifetime",

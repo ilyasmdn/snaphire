@@ -79,9 +79,11 @@ function CheckoutContent() {
     return () => unsubscribe();
   }, []);
 
-  const hasSubscription = subscription?.plan === "pro" || subscription?.plan === "starter";
+  const hasSubscription =
+    subscription?.plan === "pro" || subscription?.plan === "starter";
   const isPurchasingSubscription = planId === "starter" || planId === "pro";
-  const hasActiveSubscription = hasSubscription && isActive && isPurchasingSubscription;
+  const hasActiveSubscription =
+    hasSubscription && isActive && isPurchasingSubscription;
 
   const getCheckoutTitle = () => {
     return planId && PLAN_DATA[planId]

@@ -398,17 +398,21 @@ async function handleOrderCreated(payload: WebhookPayload) {
     const purchaseType = getPlanFromVariantId(variant_id);
     console.log(
       `Mapped variant ID ${variant_id} to purchase type: ${purchaseType}`
-    );    const interviewCount = 
-      purchaseType === "single" ? 1 
-      : purchaseType === "pack" ? 5 
-      : purchaseType === "lifetime" ? 999999 // Very high value to represent unlimited
-      : 0;
+    );
+    const interviewCount =
+      purchaseType === "single"
+        ? 1
+        : purchaseType === "pack"
+        ? 5
+        : purchaseType === "lifetime"
+        ? 999999 // Very high value to represent unlimited
+        : 0;
     console.log(`Interview count for ${purchaseType}: ${interviewCount}`);
 
     if (interviewCount === 0) {
       console.error(`❌ Invalid interview purchase variant: ${variant_id}`);
       return;
-    }    // Calculate expiry date (6 months from now, or far future for lifetime)
+    } // Calculate expiry date (6 months from now, or far future for lifetime)
     const expiryDate = new Date();
     if (purchaseType === "lifetime") {
       // Set to a very far future date for lifetime purchases
