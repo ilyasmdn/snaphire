@@ -10,6 +10,7 @@ import {
   BarChart,
 } from "lucide-react";
 import ProductHunt from "@/components/ProductHunt";
+import CompanyLogos from "@/components/CompanyLogos";
 
 export const metadata: Metadata = {
   title: "SnapHire - AI-Powered Interview Practice Platform",
@@ -97,8 +98,9 @@ export default function LandingPage() {
           {/* Left Column - Text Content */}
           <div className="flex-1 space-y-6">
             <h1 className="text-3xl lg:text-4xl font-bold text-text">
-              Master Your Interviews with{" "}
-              <span className="text-primary">AI-Powered</span> Practice
+              Land Your Dream Job with{" "}
+              <span className="text-primary">AI-Powered</span> Interview
+              Practice
             </h1>
             <p className="text-text/50 text-lg max-w-xl">
               Prepare for your dream job with our advanced interview simulation
@@ -148,6 +150,11 @@ export default function LandingPage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Company Logos Section */}
+      <div className="w-full max-w-5xl mx-auto my-6 md:my-12">
+        <CompanyLogos />
       </div>
 
       {/* Detailed Features Section */}
