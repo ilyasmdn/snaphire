@@ -8,6 +8,11 @@ import {
   Users,
   Brain,
   BarChart,
+  Code,
+  Palette,
+  Briefcase,
+  Target,
+  MessageSquare,
 } from "lucide-react";
 import ProductHunt from "@/components/ProductHunt";
 import CompanyLogos from "@/components/CompanyLogos";
@@ -156,6 +161,104 @@ export default function LandingPage() {
       <div className="w-full max-w-5xl mx-auto my-6 md:my-12">
         <CompanyLogos />
       </div>
+
+      {/* Use Case Breakdown Section */}
+      <section className="w-full bg-background py-20">
+        <div className="max-w-7xl mx-auto px-4 md:px-12">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold mb-4">Your Perfect Interview Prep Path</h2>
+            <p className="text-text/50 max-w-2xl mx-auto">
+              No matter your role or experience level, SnapHire tailors the practice experience to your specific needs.
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Junior Developer Use Case */}
+            <div className="bg-secondary/5 p-8 rounded-xl border border-secondary/10 hover:shadow-md transition-all duration-300">
+              <div className="p-3 bg-primary/10 rounded-full w-fit mb-6">
+                <Code className="h-7 w-7 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold mb-3">Junior Developer?</h3>
+              <p className="text-text/70 mb-5">
+                Master technical interviews with code challenges, system design basics, and foundational algorithm questions tailored to entry-level positions.
+              </p>
+              <ul className="space-y-3">
+                <li className="flex gap-2">
+                  <CheckCircle className="h-5 w-5 text-primary shrink-0" />
+                  <span className="text-sm">Data structure fundamentals</span>
+                </li>
+                <li className="flex gap-2">
+                  <CheckCircle className="h-5 w-5 text-primary shrink-0" />
+                  <span className="text-sm">Framework-specific questions</span>
+                </li>
+                <li className="flex gap-2">
+                  <CheckCircle className="h-5 w-5 text-primary shrink-0" />
+                  <span className="text-sm">Code walkthrough practice</span>
+                </li>
+              </ul>
+            </div>
+            
+            {/* Senior Designer Use Case */}
+            <div className="bg-secondary/5 p-8 rounded-xl border border-secondary/10 hover:shadow-md transition-all duration-300">
+              <div className="p-3 bg-primary/10 rounded-full w-fit mb-6">
+                <Palette className="h-7 w-7 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold mb-3">Senior Designer?</h3>
+              <p className="text-text/70 mb-5">
+                Polish your portfolio presentation skills, practice articulating design decisions, and prepare for stakeholder collaboration scenarios.
+              </p>
+              <ul className="space-y-3">
+                <li className="flex gap-2">
+                  <CheckCircle className="h-5 w-5 text-primary shrink-0" />
+                  <span className="text-sm">Design critique simulations</span>
+                </li>
+                <li className="flex gap-2">
+                  <CheckCircle className="h-5 w-5 text-primary shrink-0" />
+                  <span className="text-sm">Leadership scenario questions</span>
+                </li>
+                <li className="flex gap-2">
+                  <CheckCircle className="h-5 w-5 text-primary shrink-0" />
+                  <span className="text-sm">Portfolio presentation feedback</span>
+                </li>
+              </ul>
+            </div>
+            
+            {/* Product Manager Use Case */}
+            <div className="bg-secondary/5 p-8 rounded-xl border border-secondary/10 hover:shadow-md transition-all duration-300">
+              <div className="p-3 bg-primary/10 rounded-full w-fit mb-6">
+                <Briefcase className="h-7 w-7 text-primary" />
+              </div>
+              <h3 className="text-xl font-semibold mb-3">Product Manager?</h3>
+              <p className="text-text/70 mb-5">
+                Tackle real-world product scenarios, practice prioritization exercises, and sharpen your strategic thinking with industry-specific challenges.
+              </p>
+              <ul className="space-y-3">
+                <li className="flex gap-2">
+                  <CheckCircle className="h-5 w-5 text-primary shrink-0" />
+                  <span className="text-sm">Metric analysis questions</span>
+                </li>
+                <li className="flex gap-2">
+                  <CheckCircle className="h-5 w-5 text-primary shrink-0" />
+                  <span className="text-sm">Stakeholder management scenarios</span>
+                </li>
+                <li className="flex gap-2">
+                  <CheckCircle className="h-5 w-5 text-primary shrink-0" />
+                  <span className="text-sm">Product strategy challenges</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="mt-12 text-center">
+            <Button asChild size="lg" variant="outline">
+              <Link href="/sign-in" className="flex items-center gap-2">
+                <span>Try Your Role-Specific Practice</span>
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
 
       {/* Detailed Features Section */}
       <section className="w-full bg-secondary/10 py-20">
