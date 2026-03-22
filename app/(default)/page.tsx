@@ -4,18 +4,14 @@ import Link from "next/link";
 import {
   ArrowRight,
   CheckCircle,
-  Star,
   Users,
   Brain,
   BarChart,
   Code,
   Palette,
   Briefcase,
-  Target,
-  MessageSquare,
 } from "lucide-react";
 import ProductHunt from "@/components/ProductHunt";
-import CompanyLogos from "@/components/CompanyLogos";
 
 export const metadata: Metadata = {
   title: "SnapHire - AI-Powered Interview Practice Platform",
@@ -50,29 +46,6 @@ export default function LandingPage() {
     "Real-time Performance Analytics",
   ];
 
-  const testimonials = [
-    {
-      name: "Sarah Johnson",
-      role: "Software Engineer at Google",
-      content:
-        "SnapHire helped me prepare for my tech interviews effectively. The AI feedback was incredibly valuable.",
-      avatar: "SJ",
-    },
-    {
-      name: "Michael Chen",
-      role: "Product Manager at Microsoft",
-      content:
-        "The industry-specific questions really helped me understand what to expect. I landed my dream job!",
-      avatar: "MC",
-    },
-    {
-      name: "Emma Davis",
-      role: "Data Scientist at Amazon",
-      content:
-        "The real-time analytics helped me track my progress and identify areas for improvement.",
-      avatar: "ED",
-    },
-  ];
 
   const detailedFeatures = [
     {
@@ -157,10 +130,7 @@ export default function LandingPage() {
         </div>
       </div>
 
-      {/* Company Logos Section */}
-      <div className="w-full max-w-5xl mx-auto my-6 md:my-12">
-        <CompanyLogos />
-      </div>
+
 
       {/* Use Case Breakdown Section */}
       <section className="w-full bg-background py-20">
@@ -285,45 +255,10 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="w-full py-20">
-        <div className="max-w-7xl mx-auto px-4 md:px-12">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold mb-4">What Our Users Say</h2>
-            <p className="text-text/50 max-w-2xl mx-auto">
-              Join thousands of successful professionals who transformed their
-              interview performance with SnapHire.
-            </p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <div key={index} className="bg-secondary/5 p-6 rounded-lg">
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold">
-                    {testimonial.avatar}
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">{testimonial.name}</h4>
-                    <p className="text-sm text-text/50">{testimonial.role}</p>
-                  </div>
-                </div>
-                <div className="flex mb-4">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className="h-4 w-4 text-yellow-400 fill-yellow-400"
-                    />
-                  ))}
-                </div>
-                <p className="text-text/70">{testimonial.content}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+
 
       {/* Final CTA Section */}
-      <section className="w-full bg-primary/5 py-20">
+      <section className="w-full py-20">
         <div className="max-w-4xl mx-auto text-center px-4">
           <h2 className="text-3xl font-bold mb-4">
             Ready to Transform Your Interview Skills?
