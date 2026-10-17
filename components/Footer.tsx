@@ -1,130 +1,107 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Github, Linkedin, Twitter } from "lucide-react";
 
 export function Footer() {
   const currentYear = new Date().getFullYear();
 
+  const linkGroups = [
+    {
+      title: "Product",
+      links: [
+        { href: "/pricing", label: "Pricing" },
+        { href: "/features", label: "Features" },
+        { href: "/dashboard", label: "Dashboard" },
+      ],
+    },
+    {
+      title: "Resources",
+      links: [
+        { href: "/resources", label: "Learning Resources" },
+        { href: "/contact", label: "Help Center" },
+        { href: "/contact", label: "Contact" },
+      ],
+    },
+    {
+      title: "Legal",
+      links: [
+        { href: "/privacy", label: "Privacy Policy" },
+        { href: "/terms", label: "Terms of Service" },
+      ],
+    },
+  ];
+
+  const socials = [
+    { href: "https://twitter.com/snaphire", label: "Twitter", Icon: Twitter },
+    {
+      href: "https://linkedin.com/company/snaphire",
+      label: "LinkedIn",
+      Icon: Linkedin,
+    },
+    { href: "https://github.com/snaphire", label: "GitHub", Icon: Github },
+  ];
+
   return (
-    <footer className="w-full border-t bg-background">
-      <div className="max-w-7xl mx-auto px-4 md:px-12 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          {/* Company Info */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">SnapHire</h3>
-            <p className="text-sm text-text/50">
+    <footer className="w-full border-t border-border/60 bg-card/40">
+      <div className="mx-auto w-full max-w-7xl px-4 py-14 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 gap-10 md:grid-cols-2 lg:grid-cols-5">
+          <div className="space-y-5 lg:col-span-2">
+            <Link href="/" className="flex items-center gap-2.5">
+              <span className="flex size-9 items-center justify-center overflow-hidden rounded-xl ring-1 ring-border">
+                <Image
+                  src="/snaphire.png"
+                  alt="SnapHire Logo"
+                  width={36}
+                  height={36}
+                  className="size-9 object-cover"
+                />
+              </span>
+              <span className="font-display text-lg font-bold tracking-tight">
+                SnapHire
+              </span>
+            </Link>
+            <p className="max-w-xs text-sm leading-relaxed text-muted-foreground">
               Transforming interview preparation with AI-powered practice and
-              feedback.
+              personalized feedback.
             </p>
-            <div className="flex space-x-4">
-              <Link
-                href="https://twitter.com/snaphire"
-                className="text-text/50 hover:text-primary"
-              >
-                <Twitter className="h-5 w-5" />
-              </Link>
-              <Link
-                href="https://linkedin.com/company/snaphire"
-                className="text-text/50 hover:text-primary"
-              >
-                <Linkedin className="h-5 w-5" />
-              </Link>
-              <Link
-                href="https://github.com/snaphire"
-                className="text-text/50 hover:text-primary"
-              >
-                <Github className="h-5 w-5" />
-              </Link>
+            <div className="flex gap-2">
+              {socials.map(({ href, label, Icon }) => (
+                <Link
+                  key={label}
+                  href={href}
+                  aria-label={label}
+                  className="flex size-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-primary/40 hover:bg-primary/10 hover:text-primary"
+                >
+                  <Icon className="size-4" />
+                </Link>
+              ))}
             </div>
           </div>
 
-          {/* Product Links */}
-          <div>
-            <h3 className="font-semibold mb-4">Product</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link
-                  href="/pricing"
-                  className="text-sm text-text/50 hover:text-primary"
-                >
-                  Pricing
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/features"
-                  className="text-sm text-text/50 hover:text-primary"
-                >
-                  Features
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/testimonials"
-                  className="text-sm text-text/50 hover:text-primary"
-                >
-                  Testimonials
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Resources Links */}
-          <div>
-            <h3 className="font-semibold mb-4">Resources</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link
-                  href="/blog"
-                  className="text-sm text-text/50 hover:text-primary"
-                >
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/help"
-                  className="text-sm text-text/50 hover:text-primary"
-                >
-                  Help Center
-                </Link>
-              </li>{" "}
-              <li>
-                <Link
-                  href="/contact"
-                  className="text-sm text-text/50 hover:text-primary"
-                >
-                  Contact
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Legal Links */}
-          <div>
-            <h3 className="font-semibold mb-4">Legal</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link
-                  href="/privacy"
-                  className="text-sm text-text/50 hover:text-primary"
-                >
-                  Privacy Policy
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/terms"
-                  className="text-sm text-text/50 hover:text-primary"
-                >
-                  Terms of Service
-                </Link>
-              </li>
-            </ul>
-          </div>
+          {linkGroups.map((group) => (
+            <div key={group.title}>
+              <h3 className="font-display text-sm font-semibold text-foreground">
+                {group.title}
+              </h3>
+              <ul className="mt-4 space-y-3">
+                {group.links.map((link) => (
+                  <li key={link.label}>
+                    <Link
+                      href={link.href}
+                      className="text-sm text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
 
-        <div className="mt-12 pt-8 border-t text-center text-sm text-text/50">
+        <div className="mt-12 flex flex-col items-center justify-between gap-3 border-t border-border/60 pt-8 text-sm text-muted-foreground sm:flex-row">
           <p>© {currentYear} SnapHire. All rights reserved.</p>
+          <p>Built for people who want to land the offer.</p>
         </div>
       </div>
     </footer>

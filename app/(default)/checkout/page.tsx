@@ -173,28 +173,28 @@ function CheckoutContent() {
 
   if (hasActiveSubscription) {
     return (
-      <div className="container max-w-2xl mx-auto py-16 px-4">
-        <Card className="p-8">
-          <div className="space-y-8">
-            <div className="flex flex-col items-center text-center">
-              <AlertCircle className="h-16 w-16 text-amber-500 mb-4" />
-              <h1 className="text-3xl font-bold mb-2">
-                Subscription Already Active
-              </h1>
-              <p className="text-muted-foreground">
-                You already have an active <strong>{subscription?.plan}</strong>{" "}
-                subscription.
-              </p>
-            </div>
+      <div className="mx-auto w-full max-w-2xl px-4 py-20 sm:px-6">
+        <Card className="items-center gap-0 p-10 text-center">
+          <div className="flex flex-col items-center text-center">
+            <span className="flex size-14 items-center justify-center rounded-2xl bg-amber-500/10 text-amber-500">
+              <AlertCircle className="size-7" />
+            </span>
+            <h1 className="mt-6 font-display text-3xl font-bold tracking-tight">
+              Subscription already active
+            </h1>
+            <p className="mt-3 text-muted-foreground">
+              You already have an active <strong>{subscription?.plan}</strong>{" "}
+              subscription.
+            </p>
+          </div>
 
-            <div className="flex flex-col gap-4">
-              <Button asChild>
-                <Link href="/settings">Manage Subscription</Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link href="/pricing">View Plans</Link>
-              </Button>
-            </div>
+          <div className="mt-8 flex w-full max-w-sm flex-col gap-3">
+            <Button asChild>
+              <Link href="/settings">Manage subscription</Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/pricing">View plans</Link>
+            </Button>
           </div>
         </Card>
       </div>
@@ -203,29 +203,38 @@ function CheckoutContent() {
 
   if (!planId || !VARIANTS[planId]) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <h1 className="text-2xl font-bold mb-4">No Plan Selected</h1>
-        <p className="text-muted-foreground mb-8">
+      <div className="flex min-h-[60vh] flex-col items-center justify-center px-4 text-center">
+        <h1 className="font-display text-2xl font-bold tracking-tight">
+          No plan selected
+        </h1>
+        <p className="mt-3 text-muted-foreground">
           Please select a plan from our pricing page.
         </p>
-        <Button asChild>
-          <a href="/pricing">View Pricing</a>
+        <Button asChild className="mt-8">
+          <a href="/pricing">View pricing</a>
         </Button>
       </div>
     );
   }
 
   return (
-    <div className="container max-w-2xl mx-auto py-16 px-4">
-      <Card className="p-8">
-        <div className="space-y-8">
-          <div className="text-center">
-            <h1 className="text-3xl font-bold mb-4">{getCheckoutTitle()}</h1>
-            <p className="text-muted-foreground">{getCheckoutDescription()}</p>
-          </div>
+    <div className="mx-auto w-full max-w-2xl px-4 py-20 sm:px-6">
+      <Card className="overflow-hidden gap-0 p-0">
+        <div className="border-b border-border/60 bg-gradient-to-br from-primary/10 via-card to-accent/10 p-8 text-center">
+          <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+            Checkout
+          </p>
+          <h1 className="mt-2 font-display text-3xl font-bold tracking-tight">
+            {getCheckoutTitle()}
+          </h1>
+          <p className="mt-2 text-muted-foreground">{getCheckoutDescription()}</p>
+        </div>
 
-          <div className="flex flex-col items-center space-y-4 py-4">
-            <div className="text-4xl font-bold">{getPrice()}</div>
+        <div className="space-y-8 p-8">
+          <div className="flex flex-col items-center space-y-5">
+            <div className="font-display text-4xl font-extrabold tracking-tight">
+              {getPrice()}
+            </div>
             <Button
               size="lg"
               className="w-full max-w-sm"
@@ -234,11 +243,11 @@ function CheckoutContent() {
             >
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 size-4 animate-spin" />
                   Loading...
                 </>
               ) : (
-                "Proceed to Checkout"
+                "Proceed to checkout"
               )}
             </Button>
           </div>

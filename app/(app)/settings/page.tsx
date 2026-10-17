@@ -213,9 +213,11 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold">Settings</h1>
+    <div className="space-y-8">
+      <div className="space-y-1">
+        <h1 className="font-display text-3xl font-bold tracking-tight">
+          Settings
+        </h1>
         <p className="text-muted-foreground">
           Manage your account settings and preferences
         </p>
@@ -246,9 +248,9 @@ export default function SettingsPage() {
           </div>
         </Card>
         {/* Update Notice */}{" "}
-        <Card className="p-4 border-amber-200 bg-amber-50 dark:bg-amber-950/30 dark:border-amber-800">
-          <p className="text-sm text-amber-800 dark:text-amber-300 flex items-center">
-            <Info className="h-4 w-4 mr-2 inline" />
+        <Card className="gap-0 border-amber-500/20 bg-amber-500/5 p-4">
+          <p className="flex items-center text-sm text-amber-700 dark:text-amber-400">
+            <Info className="mr-2 inline size-4" />
             Note: Account, Interview Preferences and Resume &amp; Profile
             features will be activated in the next update.
           </p>
@@ -303,7 +305,7 @@ export default function SettingsPage() {
                         <select
                           id={setting.label}
                           defaultValue={setting.value}
-                          className="max-w-md rounded-md border border-input bg-background p-2"
+                          className="h-11 max-w-md rounded-lg border border-input bg-card px-3.5 text-sm shadow-xs outline-none transition-[color,box-shadow,border-color] focus-visible:border-primary/50 focus-visible:ring-[3px] focus-visible:ring-ring/25"
                         >
                           {setting.options.map((option) => (
                             <option key={option} value={option}>

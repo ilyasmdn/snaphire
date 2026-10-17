@@ -6,56 +6,60 @@ import { ArrowLeft } from "lucide-react";
 import { useEffect } from "react";
 
 export default function NotFound() {
-    useEffect(() => {
-      const savedTheme = localStorage.getItem("theme");
-  
-      if (savedTheme === "dark") {
-        document.body.classList.add("dark");
-      } else {
-        document.body.classList.remove("dark");
-      }
-    }, []);
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme");
+
+    if (savedTheme === "dark") {
+      document.body.classList.add("dark");
+    } else {
+      document.body.classList.remove("dark");
+    }
+  }, []);
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4">
-      <div className="max-w-md w-full text-center space-y-6">
-        <div className="space-y-2">
-          <h1 className="text-6xl font-bold text-primary">404</h1>
-          <h2 className="text-2xl font-semibold text-text">Page Not Found</h2>
-          <p className="text-text/50">
-            The page you're looking for doesn't exist or has been moved.
+    <div className="aurora relative flex min-h-screen items-center justify-center bg-background p-4">
+      <div className="relative w-full max-w-md space-y-8 text-center">
+        <div className="space-y-3">
+          <p className="font-display text-7xl font-extrabold tracking-tight text-gradient">
+            404
+          </p>
+          <h1 className="font-display text-2xl font-semibold tracking-tight">
+            Page not found
+          </h1>
+          <p className="text-muted-foreground">
+            The page you&apos;re looking for doesn&apos;t exist or has been
+            moved.
           </p>
         </div>
 
-        <div className="bg-secondary/5 p-6 rounded-lg">
-          <p className="text-text/70 mb-4">
+        <div className="rounded-2xl border border-border/70 bg-card/60 p-6">
+          <p className="mb-5 text-sm text-muted-foreground">
             Ready to get back on track with your interview preparation?
           </p>
           <div className="flex flex-col gap-3">
-            <Button asChild size="lg" className="font-semibold">
+            <Button asChild size="lg">
               <Link href="/">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Return to Home
+                <ArrowLeft className="mr-2 size-4" />
+                Return home
               </Link>
             </Button>
             <Button asChild variant="outline">
-              <Link href="/dashboard">Go to Dashboard</Link>
+              <Link href="/dashboard">Go to dashboard</Link>
             </Button>
           </div>
         </div>
 
-        <div className="pt-6">
-          <p className="text-sm text-text/50">
-            Need help?{" "}
-            <Link href="/resources" className="text-primary hover:underline">
-              Visit our resources
-            </Link>{" "}
-            or{" "}
-            <Link href="/settings" className="text-primary hover:underline">
-              contact support
-            </Link>
-            .
-          </p>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          Need help?{" "}
+          <Link href="/resources" className="text-primary hover:underline">
+            Visit our resources
+          </Link>{" "}
+          or{" "}
+          <Link href="/contact" className="text-primary hover:underline">
+            contact support
+          </Link>
+          .
+        </p>
       </div>
     </div>
   );

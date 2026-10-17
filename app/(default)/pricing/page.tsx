@@ -114,78 +114,93 @@ function PricingContent() {
   }, [searchParams]);
 
   return (
-    <div className="container mx-auto px-4 py-16 sm:px-6 lg:px-8">
+    <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
       {/* Header */}
-      <div className="text-center mb-12">
-        <h1 className="text-4xl font-bold tracking-tight mb-4">
+      <div className="aurora relative mx-auto mb-14 max-w-3xl text-center">
+        <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-card/70 px-3.5 py-1.5 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur">
+          Pricing
+        </span>
+        <h1 className="mt-5 font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
           Choose your perfect plan
         </h1>
-        <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-          Flexible pricing options to match your interview preparation needs
+        <p className="mx-auto mt-4 max-w-2xl text-lg text-muted-foreground">
+          Flexible pricing options to match your interview preparation needs.
+          Start free — upgrade only when you&apos;re ready.
         </p>
       </div>
 
       {/* Pricing Toggle */}
-      <div className="flex justify-center mb-12">
-        <div className="inline-flex rounded-lg border p-1 bg-muted/50">
+      <div className="mb-14 flex justify-center">
+        <div className="inline-flex rounded-full border border-border/70 bg-card/70 p-1 shadow-sm backdrop-blur">
           <Button
             variant={showSubscription ? "default" : "ghost"}
             size="sm"
             onClick={() => setShowSubscription(true)}
-            className="flex items-center gap-2"
+            className={`rounded-full ${showSubscription ? "" : "text-muted-foreground"}`}
           >
-            <CreditCard className="h-4 w-4" />
+            <CreditCard className="size-4" />
             Subscription
           </Button>
           <Button
             variant={!showSubscription ? "default" : "ghost"}
             size="sm"
             onClick={() => setShowSubscription(false)}
-            className="flex items-center gap-2"
+            className={`rounded-full ${!showSubscription ? "" : "text-muted-foreground"}`}
           >
-            <Wallet className="h-4 w-4" />
-            Pay Per Interview
+            <Wallet className="size-4" />
+            Pay per interview
           </Button>
         </div>
       </div>
 
       {/* Pricing Cards */}
-      <div className="grid md:grid-cols-3 gap-8 max-w-7xl mx-auto">
+      <div className="mx-auto grid max-w-7xl items-stretch gap-6 md:grid-cols-3">
         {(showSubscription ? subscriptionTiers : payPerInterviewTiers).map(
           (tier) => (
             <Card
               key={tier.name}
-              className={`relative flex flex-col p-8 ${
+              className={`relative flex flex-col gap-0 p-8 ${
                 tier.highlighted
-                  ? "border-primary shadow-lg scale-105"
-                  : "border-border"
+                  ? "border-primary/40 shadow-xl shadow-primary/10 md:-translate-y-2"
+                  : "border-border/70"
               }`}
             >
               {tier.highlighted && (
-                <div className="absolute -top-5 left-0 right-0 mx-auto w-32 rounded-full bg-primary px-3 py-1 text-sm text-primary-foreground text-center">
-                  Most Popular
-                </div>
+                <>
+                  <div
+                    className="pointer-events-none absolute inset-0 rounded-2xl bg-gradient-to-b from-primary/10 to-transparent"
+                    aria-hidden
+                  />
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-primary to-accent px-3.5 py-1 text-xs font-semibold text-primary-foreground shadow-lg shadow-primary/25">
+                    Most popular
+                  </div>
+                </>
               )}
 
-              <div className="mb-5">
-                <h3 className="text-2xl font-bold">{tier.name}</h3>
-                <div className="mt-4 flex items-baseline text-5xl font-bold">
-                  ${tier.price}
+              <div className="relative mb-6">
+                <h3 className="font-display text-xl font-bold tracking-tight">
+                  {tier.name}
+                </h3>
+                <div className="mt-4 flex items-baseline gap-1">
+                  <span className="font-display text-5xl font-extrabold tracking-tight">
+                    {tier.price === "Custom" ? "" : "$"}
+                    {tier.price}
+                  </span>
                   {tier.price !== "Custom" && (
-                    <span className="text-xl font-semibold text-muted-foreground">
+                    <span className="text-lg font-medium text-muted-foreground">
                       {showSubscription ? "/mo" : ""}
                     </span>
                   )}
                 </div>
-                <p className="mt-4 text-sm text-muted-foreground">
+                <p className="mt-3 text-sm leading-relaxed text-muted-foreground">
                   {tier.description}
                 </p>
               </div>
 
-              <ul className="mb-8 space-y-4 flex-1">
+              <ul className="relative mb-8 flex-1 space-y-3.5 border-t border-border/60 pt-6">
                 {tier.features.map((feature) => (
-                  <li key={feature} className="flex items-start">
-                    <Check className="h-5 w-5 text-primary shrink-0 mr-2" />
+                  <li key={feature} className="flex items-start gap-2.5">
+                    <Check className="mt-0.5 size-4 shrink-0 text-primary" />
                     <span className="text-sm">{feature}</span>
                   </li>
                 ))}
@@ -193,7 +208,8 @@ function PricingContent() {
 
               <Button
                 asChild
-                className="w-full"
+                size="lg"
+                className="relative w-full"
                 variant={tier.highlighted ? "default" : "outline"}
               >
                 <Link href={tier.href}>{tier.cta}</Link>
@@ -204,68 +220,62 @@ function PricingContent() {
       </div>
 
       {/* FAQ Section */}
-      <div className="mt-20 max-w-3xl mx-auto">
-        <h2 className="text-3xl font-bold text-center mb-12">
-          Frequently Asked Questions
-        </h2>
-        <div className="grid gap-8">
-          <div className="space-y-4">
-            <div className="flex gap-2">
-              <HelpCircle className="h-6 w-6 text-primary shrink-0" />
-              <div>
-                <h3 className="font-semibold mb-2">
-                  What's the difference between subscription and
-                  pay-per-interview?
-                </h3>
-                <p className="text-muted-foreground">
-                  Subscriptions offer unlimited access to features for a monthly
-                  fee, while pay-per-interview lets you purchase interviews as
-                  needed without a recurring commitment.
-                </p>
+      <div className="mx-auto mt-24 max-w-3xl">
+        <div className="mb-10 text-center">
+          <h2 className="font-display text-3xl font-bold tracking-tight">
+            Frequently asked questions
+          </h2>
+          <p className="mt-3 text-muted-foreground">
+            Everything you need to know before getting started.
+          </p>
+        </div>
+        <div className="space-y-4">
+          {[
+            {
+              question:
+                "What's the difference between subscription and pay-per-interview?",
+              answer:
+                "Subscriptions offer unlimited access to features for a monthly fee, while pay-per-interview lets you purchase interviews as needed without a recurring commitment.",
+            },
+            {
+              question: "How long are my purchased interviews valid?",
+              answer:
+                "Single interviews are valid for 30 days, while interview packs are valid for 90 days from the date of purchase.",
+            },
+            {
+              question: "Can I switch between plans?",
+              answer:
+                "Yes, you can switch between subscription plans or purchase individual interviews at any time. Subscription changes will be reflected in your next billing cycle.",
+            },
+          ].map((faq) => (
+            <Card key={faq.question} className="gap-0 border-border/70 p-6">
+              <div className="flex gap-3.5">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <HelpCircle className="size-4" />
+                </span>
+                <div>
+                  <h3 className="font-display font-semibold">{faq.question}</h3>
+                  <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                    {faq.answer}
+                  </p>
+                </div>
               </div>
-            </div>
-          </div>
-          <div className="space-y-4">
-            <div className="flex gap-2">
-              <HelpCircle className="h-6 w-6 text-primary shrink-0" />
-              <div>
-                <h3 className="font-semibold mb-2">
-                  How long are my purchased interviews valid?
-                </h3>
-                <p className="text-muted-foreground">
-                  Single interviews are valid for 30 days, while interview packs
-                  are valid for 90 days from the date of purchase.
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="space-y-4">
-            <div className="flex gap-2">
-              <HelpCircle className="h-6 w-6 text-primary shrink-0" />
-              <div>
-                <h3 className="font-semibold mb-2">
-                  Can I switch between plans?
-                </h3>
-                <p className="text-muted-foreground">
-                  Yes, you can switch between subscription plans or purchase
-                  individual interviews at any time. Subscription changes will
-                  be reflected in your next billing cycle.
-                </p>
-              </div>
-            </div>
-          </div>
+            </Card>
+          ))}
         </div>
       </div>
 
       {/* Final CTA */}
-      <div className="mt-20 text-center">
-        <h2 className="text-2xl font-bold mb-4">Need a custom solution?</h2>
-        <p className="text-muted-foreground mb-8">
+      <div className="aurora relative mt-20 overflow-hidden rounded-3xl border border-border/70 bg-gradient-to-br from-primary/12 via-card to-accent/12 px-6 py-14 text-center">
+        <h2 className="font-display text-2xl font-bold tracking-tight sm:text-3xl">
+          Need a custom solution?
+        </h2>
+        <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
           Contact our team to discuss custom plans or bulk interview packages
           for your organization.
         </p>
-        <Button asChild variant="outline" size="lg">
-          <Link href="/contact">Contact Sales</Link>
+        <Button asChild variant="outline" size="lg" className="mt-8">
+          <Link href="/contact">Contact sales</Link>
         </Button>
       </div>
     </div>

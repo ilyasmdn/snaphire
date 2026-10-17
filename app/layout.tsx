@@ -1,14 +1,20 @@
 import type { Metadata } from "next";
-import { Roboto } from "next/font/google";
+import { Inter, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
-const roboto = Roboto({
-  weight: ["400", "500", "700"],
+const inter = Inter({
   subsets: ["latin"],
   display: "swap",
+  variable: "--font-inter",
+});
+
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-jakarta",
 });
 
 export const metadata: Metadata = {
@@ -83,10 +89,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={roboto.className}>
-      <body className="bg-background antialiased">
+    <html
+      lang="en"
+      className={`${inter.variable} ${jakarta.variable}`}
+      suppressHydrationWarning
+    >
+      <body className="min-h-screen bg-background font-sans antialiased">
         {children}
-        <Toaster position="top-center" richColors />
+        <Toaster position="top-center" richColors closeButton />
       </body>
       <Analytics />
       <SpeedInsights />

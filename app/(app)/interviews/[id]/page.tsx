@@ -349,10 +349,12 @@ export default function InterviewSessionPage({
   };
 
   return (
-    <div className="container mx-auto p-6 max-w-2xl">
+    <div className="mx-auto max-w-2xl space-y-6 py-6">
       <div className="space-y-6">
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold">Interview Session</h1>
+        <div className="space-y-2 text-center">
+          <h1 className="font-display text-3xl font-bold tracking-tight">
+            Interview Session
+          </h1>
           <p className="text-muted-foreground">
             Your interview is ready to begin
           </p>

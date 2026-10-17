@@ -3,6 +3,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { InterviewCard } from "@/components/InterviewCard";
+import { UpgradeCard } from "@/components/UpgradeCard";
 import { Filter, Plus, Loader2, Lock } from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect } from "react";
@@ -60,36 +61,23 @@ export default function InterviewsPage() {
   // If user doesn't have access to interview features, show access restriction UI
   if (!canConductInterview()) {
     return (
-      <div className="container py-10">
-        <h1 className="text-3xl font-bold mb-8">My Interviews</h1>
+      <div className="space-y-8 py-6">
+        <div className="space-y-1">
+          <h1 className="font-display text-3xl font-bold tracking-tight">
+            My Interviews
+          </h1>
+          <p className="text-muted-foreground">
+            Review and track all your interview practice sessions
+          </p>
+        </div>
 
-        <Card className="p-8 max-w-2xl mx-auto">
-          <div className="flex flex-col items-center text-center">
-            <div className="p-3 rounded-full bg-amber-100 mb-4">
-              <Lock className="h-8 w-8 text-amber-700" />
-            </div>
-
-            <h2 className="text-2xl font-bold mb-2">
-              Interview Access Required
-            </h2>
-
-            <p className="text-muted-foreground mb-6">
-              To conduct mock interviews and view your history, you need either
-              an active subscription or interview credits.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-3">
-              <Button asChild>
-                <Link href="/pricing">Get a Subscription</Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link href="/pricing?tab=pay-per-interview">
-                  Buy Interview Credits
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </Card>
+        <UpgradeCard
+          title="Interview access required"
+          description="To conduct mock interviews and view your history, you need either an active subscription or interview credits."
+          primaryLabel="Get a subscription"
+          secondaryHref="/pricing?tab=pay-per-interview"
+          secondaryLabel="Buy interview credits"
+        />
       </div>
     );
   }
@@ -110,44 +98,47 @@ export default function InterviewsPage() {
       feature="mock_interviews_limited"
       checkPurchases={true}
       fallback={
-        <Card className="p-6 text-center">
-          <Lock className="h-8 w-8 text-muted-foreground mx-auto mb-4" />
-          <h2 className="text-xl font-bold">Feature Locked</h2>
-          <p className="text-muted-foreground mt-2">
+        <Card className="items-center p-10 text-center">
+          <Lock className="mx-auto mb-4 size-8 text-muted-foreground" />
+          <h2 className="font-display text-xl font-bold">Feature locked</h2>
+          <p className="mt-2 text-muted-foreground">
             Access to the interviews feature is restricted.
           </p>
         </Card>
       }
     >
-      <div className="container mx-auto p-6 space-y-6">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold">Your Interviews</h1>
+      <div className="space-y-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <h1 className="font-display text-3xl font-bold tracking-tight">
+              Your Interviews
+            </h1>
             <p className="text-muted-foreground">
               Review and track all your interview practice sessions
             </p>
           </div>
-          <Button asChild>
+          <Button asChild className="w-fit">
             <Link
               href="/generate-interview"
               className="flex items-center gap-2"
             >
-              <Plus className="h-4 w-4" />
-              New Interview
+              <Plus className="size-4" />
+              New interview
             </Link>
           </Button>
         </div>
 
         {types.length > 1 && (
-          <Card className="p-4">
-            <div className="flex gap-4 items-center">
-              <Filter className="h-4 w-4 text-muted-foreground" />
-              <div className="flex gap-2">
+          <Card className="gap-0 p-4">
+            <div className="flex flex-wrap items-center gap-3">
+              <Filter className="size-4 text-muted-foreground" />
+              <div className="flex flex-wrap gap-2">
                 {types.map((type) => (
                   <Button
                     key={type}
                     variant={selectedType === type ? "default" : "outline"}
                     size="sm"
+                    className="capitalize"
                     onClick={() => setSelectedType(type)}
                   >
                     {type === "all" ? "All" : type}
@@ -159,32 +150,36 @@ export default function InterviewsPage() {
         )}
 
         {loading ? (
-          <div className="flex justify-center items-center p-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="flex items-center justify-center p-16">
+            <Loader2 className="size-8 animate-spin text-primary" />
           </div>
         ) : error ? (
-          <Card className="p-6 text-center">
-            <p className="text-red-500">{error}</p>
+          <Card className="items-center p-10 text-center">
+            <p className="text-destructive">{error}</p>
             <Button
               variant="outline"
               onClick={() => window.location.reload()}
-              className="mt-4"
             >
-              Try Again
+              Try again
             </Button>
           </Card>
         ) : filteredInterviews.length === 0 ? (
-          <Card className="p-6 text-center">
-            <p className="text-muted-foreground">No interviews found.</p>
-            <p className="text-muted-foreground mt-1">
-              Create a new interview to get started.
-            </p>
-            <Button asChild className="mt-4">
-              <Link href="/generate-interview">New Interview</Link>
+          <Card className="items-center p-10 text-center">
+            <span className="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <Plus className="size-6" />
+            </span>
+            <div className="space-y-1">
+              <p className="font-medium">No interviews found</p>
+              <p className="text-sm text-muted-foreground">
+                Create a new interview to get started.
+              </p>
+            </div>
+            <Button asChild>
+              <Link href="/generate-interview">New interview</Link>
             </Button>
           </Card>
         ) : (
-          <div className="grid gap-4">
+          <div className="grid gap-3">
             {filteredInterviews.map((interview) => (
               <InterviewCard
                 key={interview.id}

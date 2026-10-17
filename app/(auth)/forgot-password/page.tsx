@@ -62,12 +62,14 @@ const ForgotPasswordForm = () => {
   };
 
   return (
-    <div className="w-full max-w-md mx-auto my-4 md:my-6">
-      <div className="bg-card text-card-foreground rounded-xl border shadow-sm p-8 space-y-8 animate-in slide-in-from-bottom-4 duration-1000 fade-in-0">
+    <div className="w-full animate-in fade-in-0 slide-in-from-bottom-4 duration-700">
+      <div className="space-y-8 rounded-2xl border border-border/70 bg-card p-8 shadow-xl shadow-black/[0.04] dark:shadow-black/30">
         <div className="flex flex-col space-y-2 text-center">
-          <h1 className="text-2xl font-bold tracking-tight">Forgot Password</h1>
-          <p className="text-muted-foreground text-sm">
-            Enter your email to receive password reset instructions
+          <h1 className="font-display text-2xl font-bold tracking-tight">
+            Forgot password?
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Enter your email and we&apos;ll send you reset instructions
           </p>
         </div>
 
@@ -93,15 +95,16 @@ const ForgotPasswordForm = () => {
 
             <Button
               type="submit"
+              size="lg"
               className="w-full font-medium"
               disabled={isLoading}
             >
               {isLoading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Loader2 className="mr-2 size-4 animate-spin" />
               ) : (
                 <>
                   Send Reset Email
-                  <Mail className="ml-2 h-4 w-4" />
+                  <Mail className="ml-2 size-4" />
                 </>
               )}
             </Button>

@@ -2,6 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { UpgradeCard } from "@/components/UpgradeCard";
 import {
   Book,
   Bookmark,
@@ -10,7 +11,6 @@ import {
   Youtube,
   Download,
   ExternalLink,
-  Lock,
 } from "lucide-react";
 import Link from "next/link";
 import { useFeatureAccess } from "@/lib/hooks/use-feature-access";
@@ -31,28 +31,21 @@ export default function ResourcesPage() {
   // If user doesn't have access to learning resources, show upgrade UI
   if (!hasLearningResourcesAccess) {
     return (
-      <div className="container py-10">
-        <h1 className="text-3xl font-bold mb-8">Learning Resources</h1>
+      <div className="space-y-8 py-6">
+        <div className="space-y-1">
+          <h1 className="font-display text-3xl font-bold tracking-tight">
+            Learning Resources
+          </h1>
+          <p className="text-muted-foreground">
+            Interview guides, templates, and learning materials
+          </p>
+        </div>
 
-        <Card className="p-8 max-w-2xl mx-auto">
-          <div className="flex flex-col items-center text-center">
-            <div className="p-3 rounded-full bg-amber-100 mb-4">
-              <Lock className="h-8 w-8 text-amber-700" />
-            </div>
-
-            <h2 className="text-2xl font-bold mb-2">Pro Resources</h2>
-
-            <p className="text-muted-foreground mb-6">
-              Our curated learning resources are available exclusively for Pro
-              and Teams subscribers. Upgrade to access guides, templates, and
-              tutorial videos to help you ace your interviews.
-            </p>
-
-            <Button asChild>
-              <Link href="/pricing">Upgrade to Pro</Link>
-            </Button>
-          </div>
-        </Card>
+        <UpgradeCard
+          title="Pro resources"
+          description="Our curated learning resources are available exclusively for Pro and Teams subscribers. Upgrade to access guides, templates, and tutorial videos to help you ace your interviews."
+          primaryLabel="Upgrade to Pro"
+        />
       </div>
     );
   }
@@ -125,29 +118,34 @@ export default function ResourcesPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold">Resources</h1>
+    <div className="space-y-8">
+      <div className="space-y-1">
+        <h1 className="font-display text-3xl font-bold tracking-tight">
+          Resources
+        </h1>
         <p className="text-muted-foreground">
           Interview guides, templates, and learning materials
         </p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
         {resources.map((resource) => {
           const ActionIcon = getActionIcon(resource.type, resource.isExternal);
 
           return (
-            <Card key={resource.title} className="p-6">
+            <Card
+              key={resource.title}
+              className="card-hover gap-0 p-6"
+            >
               <div className="flex items-start gap-4">
                 <div
-                  className={`p-2 rounded-lg ${getTypeStyles(resource.type)}`}
+                  className={`rounded-xl p-2.5 ${getTypeStyles(resource.type)}`}
                 >
-                  <resource.icon className="h-5 w-5" />
+                  <resource.icon className="size-5" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold truncate">{resource.title}</h3>
-                  <p className="text-sm text-muted-foreground line-clamp-2 mb-4">
+                <div className="min-w-0 flex-1">
+                  <h3 className="truncate font-semibold">{resource.title}</h3>
+                  <p className="mb-4 line-clamp-2 text-sm text-muted-foreground">
                     {resource.description}
                   </p>
                   <Button asChild variant="outline" className="w-full">
@@ -158,9 +156,9 @@ export default function ResourcesPage() {
                         resource.isExternal ? "noopener noreferrer" : undefined
                       }
                     >
-                      <ActionIcon className="mr-2 h-4 w-4" />
+                      <ActionIcon className="mr-2 size-4" />
                       {resource.type === "template" ? "Download" : "View"}
-                      {resource.isExternal && " (External)"}
+                      {resource.isExternal && " (external)"}
                     </Link>
                   </Button>
                 </div>
@@ -171,13 +169,15 @@ export default function ResourcesPage() {
       </div>
 
       {/* Bookmarks Section */}
-      <div className="mt-12">
-        <div className="flex items-center gap-2 mb-6">
-          <Bookmark className="h-5 w-5 text-primary" />
-          <h2 className="text-xl font-semibold">Saved Resources</h2>
+      <div className="pt-6">
+        <div className="mb-5 flex items-center gap-2">
+          <Bookmark className="size-5 text-primary" />
+          <h2 className="font-display text-xl font-semibold">
+            Saved resources
+          </h2>
         </div>
-        <Card className="p-6 flex items-center justify-center text-muted-foreground">
-          <p>You haven't saved any resources yet</p>
+        <Card className="items-center gap-0 border-dashed p-8 text-center text-muted-foreground">
+          <p>You haven&apos;t saved any resources yet</p>
         </Card>
       </div>
     </div>

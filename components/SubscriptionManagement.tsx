@@ -152,55 +152,57 @@ export function SubscriptionManagement() {
 
   return (
     <div className="space-y-6">
-      <div className="flex border-b">
+      <div className="inline-flex rounded-full border border-border/70 bg-card/70 p-1 shadow-sm">
         <button
           onClick={() => setActiveTab("subscription")}
-          className={`px-4 py-2 flex items-center gap-2 ${
+          className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
             activeTab === "subscription"
-              ? "border-b-2 border-primary font-medium text-primary"
-              : "text-muted-foreground"
+              ? "bg-primary text-primary-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          <CreditCard className="h-4 w-4" />
+          <CreditCard className="size-4" />
           Subscription
         </button>
         <button
           onClick={() => setActiveTab("purchases")}
-          className={`px-4 py-2 flex items-center gap-2 ${
+          className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
             activeTab === "purchases"
-              ? "border-b-2 border-primary font-medium text-primary"
-              : "text-muted-foreground"
+              ? "bg-primary text-primary-foreground shadow-sm"
+              : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          <Tag className="h-4 w-4" />
-          Individual Purchases
+          <Tag className="size-4" />
+          Individual purchases
         </button>
       </div>
 
       {activeTab === "subscription" ? (
-        <Card className="p-6">
+        <Card className="gap-0 p-6">
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-bold">Subscription</h2>
-              <p className="text-muted-foreground mt-1">
+              <h2 className="font-display text-xl font-bold tracking-tight">
+                Subscription
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
                 Manage your subscription and billing
               </p>
             </div>
-            <div className="flex items-center justify-between border-b pb-4">
+            <div className="flex items-center justify-between border-b border-border/60 pb-5">
               <div>
-                <h3 className="font-medium">Current Plan</h3>
-                <div className="flex items-center gap-2 mt-1">
-                  <span className="text-xl font-bold capitalize">
+                <h3 className="font-medium">Current plan</h3>
+                <div className="mt-1 flex items-center gap-2">
+                  <span className="font-display text-xl font-bold capitalize">
                     {currentPlan === "unknown" ? "Free" : currentPlan}
                   </span>
                   {isActive ? (
-                    <span className="inline-flex items-center rounded-full bg-green-50 px-2 py-1 text-xs font-medium text-green-700">
-                      <CheckCircle2 className="mr-1 h-3 w-3" />
+                    <span className="inline-flex items-center rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs font-medium text-emerald-600 dark:text-emerald-400">
+                      <CheckCircle2 className="mr-1 size-3" />
                       Active
                     </span>
                   ) : (
-                    <span className="inline-flex items-center rounded-full bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700">
-                      <CheckCircle2 className="mr-1 h-3 w-3" />
+                    <span className="inline-flex items-center rounded-full bg-amber-500/10 px-2.5 py-1 text-xs font-medium text-amber-600 dark:text-amber-400">
+                      <CheckCircle2 className="mr-1 size-3" />
                       Inactive
                     </span>
                   )}
@@ -282,11 +284,14 @@ export function SubscriptionManagement() {
                           {15 - monthlyInterviewsUsed} remaining
                         </span>
                       </div>
-                      <div className="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                      <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-secondary">
                         <div
-                          className="bg-primary h-1.5 rounded-full transition-all"
+                          className="h-full rounded-full bg-primary transition-all"
                           style={{
-                            width: `${(monthlyInterviewsUsed / 15) * 100}%`,
+                            width: `${Math.min(
+                              (monthlyInterviewsUsed / 15) * 100,
+                              100
+                            )}%`,
                           }}
                         ></div>
                       </div>
@@ -296,27 +301,29 @@ export function SubscriptionManagement() {
 
                 <div className="flex justify-end">
                   <Button variant="outline" size="sm" asChild>
-                    <Link href="/settings/billing">View Billing History</Link>
+                    <Link href="/settings/billing">View billing history</Link>
                   </Button>
                 </div>
               </div>
             )}
             <div>
-              <h4 className="font-medium mb-4">Included Features</h4>
+              <h4 className="mb-4 font-medium">Included features</h4>
               <ul className="space-y-3">
                 {planFeatures.map((feature) => (
                   <li key={feature.name} className="flex items-start">
                     <div
                       className={`mr-3 ${
-                        feature.included ? "text-green-500" : "text-gray-300"
+                        feature.included
+                          ? "text-emerald-500"
+                          : "text-muted-foreground/30"
                       }`}
                     >
-                      <CheckCircle2 className="h-5 w-5" />
+                      <CheckCircle2 className="size-5" />
                     </div>
                     <span
-                      className={
+                      className={`text-sm ${
                         feature.included ? "" : "text-muted-foreground"
-                      }
+                      }`}
                     >
                       {feature.name}
                     </span>
@@ -328,8 +335,8 @@ export function SubscriptionManagement() {
               <div className="flex justify-end pt-4">
                 <Button asChild variant={isPlan("pro") ? "outline" : "default"}>
                   <Link href="/pricing" className="inline-flex items-center">
-                    {isPlan("pro") ? "Compare Plans" : "Upgrade Now"}
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    {isPlan("pro") ? "Compare plans" : "Upgrade now"}
+                    <ArrowRight className="ml-2 size-4" />
                   </Link>
                 </Button>
               </div>
@@ -337,41 +344,43 @@ export function SubscriptionManagement() {
           </div>
         </Card>
       ) : (
-        <Card className="p-6">
+        <Card className="gap-0 p-6">
           <div className="space-y-6">
             <div>
-              <h2 className="text-2xl font-bold">Individual Purchases</h2>
-              <p className="text-muted-foreground mt-1">
+              <h2 className="font-display text-xl font-bold tracking-tight">
+                Individual purchases
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
                 Manage your one-time interview purchases
               </p>
             </div>
 
-            <div className="flex flex-col md:flex-row gap-4 border-b pb-4">
-              <div className="flex-1 bg-muted/40 rounded-lg p-4">
+            <div className="flex flex-col gap-4 border-b border-border/60 pb-5 md:flex-row">
+              <div className="flex-1 rounded-xl border border-border/60 bg-muted/30 p-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-primary/10">
-                    <Package className="h-5 w-5 text-primary" />
+                  <div className="rounded-xl bg-primary/10 p-2">
+                    <Package className="size-5 text-primary" />
                   </div>
                   <div>
                     <div className="text-sm text-muted-foreground">
-                      Active Purchases
+                      Active purchases
                     </div>
-                    <div className="text-2xl font-bold">
+                    <div className="font-display text-2xl font-bold">
                       {activePurchases.length}
                     </div>
                   </div>
                 </div>
               </div>{" "}
-              <div className="flex-1 bg-muted/40 rounded-lg p-4">
+              <div className="flex-1 rounded-xl border border-border/60 bg-muted/30 p-4">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-full bg-primary/10">
-                    <Timer className="h-5 w-5 text-primary" />
+                  <div className="rounded-xl bg-primary/10 p-2">
+                    <Timer className="size-5 text-primary" />
                   </div>
                   <div>
                     <div className="text-sm text-muted-foreground">
-                      Remaining Interviews
+                      Remaining interviews
                     </div>{" "}
-                    <div className="text-2xl font-bold">
+                    <div className="font-display text-2xl font-bold">
                       {remainingInterviews === Infinity ? (
                         <span className="text-primary">∞</span>
                       ) : (
@@ -385,10 +394,13 @@ export function SubscriptionManagement() {
 
             {activePurchases.length > 0 ? (
               <div>
-                <h4 className="font-medium mb-3">Active Purchases</h4>
-                <div className="space-y-4">
+                <h4 className="mb-3 font-medium">Active purchases</h4>
+                <div className="space-y-3">
                   {activePurchases.map((purchase) => (
-                    <div key={purchase.id} className="border rounded-md p-4">
+                    <div
+                      key={purchase.id}
+                      className="rounded-xl border border-border/60 bg-muted/20 p-4"
+                    >
                       <div className="flex justify-between">
                         <div>
                           <div className="font-medium">
@@ -441,14 +453,14 @@ export function SubscriptionManagement() {
 
                 {/* Lifetime Interviews Promotional Banner */}
                 {!activePurchases.some((p) => p.type === "lifetime") && (
-                  <div className="mt-6 p-5 border border-primary/20 bg-primary/5 rounded-lg">
+                  <div className="mt-6 rounded-xl border border-primary/20 bg-gradient-to-br from-primary/10 via-card to-accent/10 p-5">
                     <div className="flex items-start gap-4">
-                      <div className="p-2 rounded-full bg-primary/20">
-                        <Timer className="h-6 w-6 text-primary" />
+                      <div className="rounded-xl bg-primary/15 p-2.5">
+                        <Timer className="size-6 text-primary" />
                       </div>
                       <div className="flex-1">
-                        <h4 className="text-lg font-medium">
-                          Lifetime Unlimited Interviews
+                        <h4 className="font-display text-lg font-semibold">
+                          Lifetime unlimited interviews
                         </h4>
                         <p className="mt-1 text-sm text-muted-foreground">
                           Get unlimited interviews forever for a one-time
@@ -458,7 +470,7 @@ export function SubscriptionManagement() {
                         <div className="mt-4">
                           <Button asChild>
                             <Link href="/checkout?plan=lifetime">
-                              Get Lifetime Access
+                              Get lifetime access
                             </Link>
                           </Button>
                         </div>
@@ -468,26 +480,26 @@ export function SubscriptionManagement() {
                 )}
               </div>
             ) : (
-              <div className="text-center py-6">
-                <Package className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
-                <h3 className="text-lg font-medium mb-2">
-                  No Active Purchases
+              <div className="py-8 text-center">
+                <Package className="mx-auto mb-3 size-12 text-muted-foreground/60" />
+                <h3 className="font-display text-lg font-semibold">
+                  No active purchases
                 </h3>
-                <p className="text-muted-foreground mb-4">
-                  You don't have any active interview purchases
+                <p className="mt-2 text-muted-foreground">
+                  You don&apos;t have any active interview purchases
                 </p>
-                <div className="space-y-4">
+                <div className="mt-6 space-y-4">
                   <Button asChild className="w-full sm:w-auto">
                     <Link href="/pricing?tab=pay-per-interview">
-                      Buy Individual Interviews
+                      Buy individual interviews
                     </Link>
                   </Button>
                   <div className="relative">
                     <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t" />
+                      <span className="w-full border-t border-border/60" />
                     </div>
                     <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-background px-2 text-muted-foreground">
+                      <span className="bg-card px-2 text-muted-foreground">
                         or
                       </span>
                     </div>
@@ -498,21 +510,21 @@ export function SubscriptionManagement() {
                     className="w-full sm:w-auto"
                   >
                     <Link href="/checkout?plan=lifetime">
-                      Get Lifetime Access ($20)
+                      Get lifetime access ($20)
                     </Link>
                   </Button>
                 </div>
               </div>
             )}
 
-            <div className="flex justify-end pt-4 border-t">
+            <div className="flex justify-end border-t border-border/60 pt-4">
               <Button asChild>
                 <Link
                   href="/pricing?tab=pay-per-interview"
                   className="inline-flex items-center"
                 >
-                  Purchase Interviews
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  Purchase interviews
+                  <ArrowRight className="ml-2 size-4" />
                 </Link>
               </Button>
             </div>

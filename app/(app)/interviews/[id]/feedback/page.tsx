@@ -325,7 +325,7 @@ export default function FeedbackPage({
 
   if (loading) {
     return (
-      <div className="container mx-auto p-6 max-w-4xl space-y-6">
+      <div className="mx-auto max-w-4xl space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <Skeleton className="h-8 w-48" />
@@ -382,68 +382,71 @@ export default function FeedbackPage({
 
   if (error) {
     return (
-      <div className="container mx-auto p-6 max-w-2xl">
-        <Card className="p-6">
-          <div className="flex flex-col items-center justify-center py-8 text-center">
+      <div className="mx-auto max-w-2xl py-6">
+        <Card className="items-center gap-0 p-10 text-center">
             <div className="text-destructive mb-4 rounded-full bg-destructive/10 p-3">
               <AlertCircle className="h-6 w-6" />
             </div>
             <h3 className="text-lg font-semibold">Error Loading Feedback</h3>
             <p className="text-sm text-muted-foreground mt-1">{error}</p>
             <Button
-              className="mt-4"
               variant="outline"
               onClick={() => router.push("/interviews")}
             >
               Return to Interviews
             </Button>
-          </div>
         </Card>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl space-y-6">
+    <div className="mx-auto max-w-4xl space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="sm" asChild className="p-0">
+            <Button variant="ghost" size="icon" asChild className="size-8">
               <Link href={`/interviews/${unwrappedParams.id}`}>
-                <ArrowLeft className="h-4 w-4" />
+                <ArrowLeft className="size-4" />
               </Link>
             </Button>
-            <h1 className="text-3xl font-bold">Interview Feedback</h1>
+            <h1 className="font-display text-3xl font-bold tracking-tight">
+              Interview Feedback
+            </h1>
           </div>
-          <p className="text-muted-foreground mt-1">
-            {interview?.role} • {interview?.type} Interview • {interview?.level}{" "}
-            Level
+          <p className="text-muted-foreground">
+            {interview?.role} • {interview?.type} interview • {interview?.level}{" "}
+            level
           </p>
         </div>
 
-        <Button onClick={handleDownload} className="flex items-center gap-2">
-          <Download className="h-4 w-4" />
-          Download Report
+        <Button onClick={handleDownload} className="flex w-fit items-center gap-2">
+          <Download className="size-4" />
+          Download report
         </Button>
       </div>
 
       {/* Overall Summary */}
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-          <FileText className="h-5 w-5 text-primary" />
-          Overall Summary
-        </h2>
-        <p className="text-muted-foreground">{feedback?.summary}</p>
+      <Card className="gap-0 overflow-hidden p-0">
+        <div className="border-b border-border/60 bg-gradient-to-br from-primary/10 via-card to-accent/10 p-6">
+          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <FileText className="size-4 text-primary" />
+            Overall Summary
+          </div>
+          <p className="mt-3 leading-relaxed text-foreground/90">
+            {feedback?.summary}
+          </p>
+        </div>
 
-        <div className="mt-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 rounded-full bg-primary/10">
-              <BarChart className="h-5 w-5 text-primary" />
-            </div>
+        <div className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-4">
+            <span className="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <BarChart className="size-6" />
+            </span>
             <div>
-              <p className="text-sm text-muted-foreground">Overall Score</p>
-              <p className="font-semibold text-2xl">
+              <p className="text-sm text-muted-foreground">Overall score</p>
+              <p className="font-display text-3xl font-bold tracking-tight">
                 {feedback?.overallScore}%
               </p>
             </div>
@@ -451,19 +454,19 @@ export default function FeedbackPage({
 
           <div className="flex gap-2">
             {feedback && feedback.overallScore >= 80 ? (
-              <div className="px-3 py-1 rounded-full bg-green-500/10 text-green-500 text-sm font-medium flex items-center gap-1">
-                <CheckCircle className="h-3.5 w-3.5" />
+              <div className="flex items-center gap-1 rounded-full bg-green-500/10 px-3 py-1 text-sm font-medium text-green-500">
+                <CheckCircle className="size-3.5" />
                 Excellent
               </div>
             ) : feedback && feedback.overallScore >= 60 ? (
-              <div className="px-3 py-1 rounded-full bg-yellow-500/10 text-yellow-500 text-sm font-medium flex items-center gap-1">
-                <Clock className="h-3.5 w-3.5" />
+              <div className="flex items-center gap-1 rounded-full bg-yellow-500/10 px-3 py-1 text-sm font-medium text-yellow-500">
+                <Clock className="size-3.5" />
                 Good
               </div>
             ) : (
-              <div className="px-3 py-1 rounded-full bg-orange-500/10 text-orange-500 text-sm font-medium flex items-center gap-1">
-                <AlertCircle className="h-3.5 w-3.5" />
-                Needs Improvement
+              <div className="flex items-center gap-1 rounded-full bg-orange-500/10 px-3 py-1 text-sm font-medium text-orange-500">
+                <AlertCircle className="size-3.5" />
+                Needs improvement
               </div>
             )}
           </div>
@@ -471,37 +474,41 @@ export default function FeedbackPage({
       </Card>
 
       {/* Strengths and Areas for Improvement */}
-      <div className="grid md:grid-cols-2 gap-4">
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <ThumbsUp className="h-5 w-5 text-green-500" />
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card className="gap-0 p-6">
+          <h2 className="mb-5 flex items-center gap-2 font-display text-lg font-semibold">
+            <span className="flex size-8 items-center justify-center rounded-lg bg-green-500/10">
+              <ThumbsUp className="size-4 text-green-500" />
+            </span>
             Strengths
           </h2>
-          <ul className="space-y-2">
+          <ul className="space-y-3">
             {feedback?.strengths.map((strength, index) => (
               <li
                 key={index}
-                className="flex items-start gap-2 text-muted-foreground"
+                className="flex items-start gap-2.5 text-sm text-muted-foreground"
               >
-                <CheckCircle className="h-4 w-4 text-green-500 mt-0.5 flex-shrink-0" />
+                <CheckCircle className="mt-0.5 size-4 flex-shrink-0 text-green-500" />
                 <span>{strength}</span>
               </li>
             ))}
           </ul>
         </Card>
 
-        <Card className="p-6">
-          <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-            <ThumbsDown className="h-5 w-5 text-orange-500" />
-            Areas for Improvement
+        <Card className="gap-0 p-6">
+          <h2 className="mb-5 flex items-center gap-2 font-display text-lg font-semibold">
+            <span className="flex size-8 items-center justify-center rounded-lg bg-orange-500/10">
+              <ThumbsDown className="size-4 text-orange-500" />
+            </span>
+            Areas for improvement
           </h2>
-          <ul className="space-y-2">
+          <ul className="space-y-3">
             {feedback?.areasOfImprovement.map((area, index) => (
               <li
                 key={index}
-                className="flex items-start gap-2 text-muted-foreground"
+                className="flex items-start gap-2.5 text-sm text-muted-foreground"
               >
-                <Lightbulb className="h-4 w-4 text-orange-500 mt-0.5 flex-shrink-0" />
+                <Lightbulb className="mt-0.5 size-4 flex-shrink-0 text-orange-500" />
                 <span>{area}</span>
               </li>
             ))}
@@ -510,39 +517,44 @@ export default function FeedbackPage({
       </div>
 
       {/* Response Assessment */}
-      <Card className="p-6">
-        <h2 className="text-lg font-semibold mb-6 flex items-center gap-2">
-          <FileText className="h-5 w-5 text-primary" />
-          Response Assessment
+      <Card className="gap-0 p-6">
+        <h2 className="mb-6 flex items-center gap-2 font-display text-lg font-semibold">
+          <span className="flex size-8 items-center justify-center rounded-lg bg-primary/10">
+            <FileText className="size-4 text-primary" />
+          </span>
+          Response assessment
         </h2>
 
-        <div className="space-y-8">
+        <div className="space-y-6">
           {feedback?.questionFeedback.map((qf, index) => (
-            <div key={index} className="pb-6 border-b last:border-0 last:pb-0">
-              <div className="flex justify-between items-start mb-2">
+            <div
+              key={index}
+              className="rounded-xl border border-border/60 bg-muted/20 p-5 last:mb-0"
+            >
+              <div className="mb-2.5 flex flex-col justify-between gap-2 sm:flex-row sm:items-start">
                 <h3 className="font-medium">
                   {index + 1}. {qf.question}
                 </h3>
                 {renderScoreStars(qf.score)}
               </div>
-              <p className="text-muted-foreground text-sm">{qf.comments}</p>
+              <p className="text-sm text-muted-foreground">{qf.comments}</p>
             </div>
           ))}
         </div>
       </Card>
 
       {/* Action buttons */}
-      <div className="flex justify-between items-center pt-4">
+      <div className="flex flex-col-reverse items-stretch gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
         <Button variant="outline" asChild>
           <Link href="/interviews" className="flex items-center gap-2">
-            <ArrowLeft className="h-4 w-4" />
-            Back to Interviews
+            <ArrowLeft className="size-4" />
+            Back to interviews
           </Link>
         </Button>
 
         <Button asChild>
           <Link href="/generate-interview" className="flex items-center gap-2">
-            Create New Interview
+            Create new interview
           </Link>
         </Button>
       </div>

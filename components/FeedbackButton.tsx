@@ -51,48 +51,55 @@ export function FeedbackButton() {
       {/* Floating button */}
       <Button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 rounded-full h-12 w-12 shadow-lg"
+        className="fixed bottom-6 right-6 size-12 rounded-full shadow-lg shadow-primary/25"
         aria-label="Submit feedback"
       >
-        <MessageSquare className="h-5 w-5" />
+        <MessageSquare className="size-5" />
       </Button>
 
       {/* Feedback modal */}
       {isOpen && (
-        <div className="fixed inset-0 bg-black/30 flex items-center justify-center z-50 p-4">
-          <Card className="w-full max-w-md p-6 relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+          <Card className="relative w-full max-w-md gap-0 p-6">
             <Button
               variant="ghost"
               size="icon"
               onClick={() => setIsOpen(false)}
-              className="absolute right-2 top-2"
+              className="absolute right-2 top-2 rounded-full"
             >
-              <X className="h-4 w-4" />
+              <X className="size-4" />
             </Button>
 
-            <h2 className="text-xl font-bold">Share Your Feedback</h2>
-            <p className="text-muted-foreground">
-              We'd love to hear your thoughts on how we can improve SnapHire.
+            <h2 className="font-display text-xl font-bold tracking-tight">
+              Share your feedback
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              We&apos;d love to hear your thoughts on how we can improve
+              SnapHire.
             </p>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="mt-6 space-y-5">
               <div>
-                <Label htmlFor="feedback-type" className="mb-2">Type of Feedback</Label>
+                <Label htmlFor="feedback-type" className="mb-2 block">
+                  Type of feedback
+                </Label>
                 <select
                   id="feedback-type"
                   value={feedbackType}
                   onChange={(e) => setFeedbackType(e.target.value)}
-                  className="w-full rounded-md border border-input bg-background p-2"
+                  className="h-11 w-full rounded-lg border border-input bg-card px-3.5 text-sm shadow-xs outline-none transition-[color,box-shadow,border-color] focus-visible:border-primary/50 focus-visible:ring-[3px] focus-visible:ring-ring/25"
                 >
-                  <option value="feature_request">Feature Request</option>
-                  <option value="bug_report">Bug Report</option>
-                  <option value="general_feedback">General Feedback</option>
+                  <option value="feature_request">Feature request</option>
+                  <option value="bug_report">Bug report</option>
+                  <option value="general_feedback">General feedback</option>
                   <option value="other">Other</option>
                 </select>
               </div>
 
               <div>
-                <Label htmlFor="feedback-text" className="mb-2">Your Feedback</Label>
+                <Label htmlFor="feedback-text" className="mb-2 block">
+                  Your feedback
+                </Label>
                 <Textarea
                   id="feedback-text"
                   placeholder="Please describe your feedback in detail..."
@@ -104,7 +111,7 @@ export function FeedbackButton() {
               </div>
 
               <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? "Submitting..." : "Submit Feedback"}
+                {isSubmitting ? "Submitting..." : "Submit feedback"}
               </Button>
             </form>
           </Card>

@@ -30,7 +30,7 @@ export function LandingMobileNav() {
     { href: "/pricing", label: "Pricing" },
     { href: "/dashboard", label: "Dashboard" },
     { href: "/interviews", label: "My Interviews" },
-    { href: "/contact", label: "Contact Us" },
+    { href: "/contact", label: "Contact" },
   ];
 
   return (
@@ -38,14 +38,16 @@ export function LandingMobileNav() {
       <Button
         variant="ghost"
         size="icon"
-        className="h-10 w-10"
+        className="rounded-full"
+        aria-label="Toggle navigation"
         onClick={() => setIsOpen(!isOpen)}
       >
-        {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-      </Button>{" "}
+        {isOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+      </Button>
+
       {isOpen && (
-        <div className="fixed inset-0 top-14 z-50 bg-background">
-          <nav className="p-4 space-y-2 bg-background/95 backdrop-blur-sm">
+        <div className="fixed inset-x-0 top-16 z-50 border-b border-border/60 glass animate-in fade-in-0 slide-in-from-top-2">
+          <nav className="space-y-1 p-4">
             {navLinks.map((link) => {
               const isActive = pathname === link.href;
               return (
@@ -55,10 +57,10 @@ export function LandingMobileNav() {
                   onClick={() => setIsOpen(false)}
                 >
                   <span
-                    className={`flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+                    className={`flex items-center rounded-xl px-3.5 py-2.5 text-sm font-medium transition-colors ${
                       isActive
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        ? "bg-secondary text-foreground"
+                        : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
                     }`}
                   >
                     {link.label}
@@ -67,10 +69,17 @@ export function LandingMobileNav() {
               );
             })}
 
-            <div className="pt-2 border-t space-y-2">
-              <Link href="/sign-up" onClick={() => setIsOpen(false)}>
-                <Button className="w-full">Sign Up</Button>
-              </Link>
+            <div className="grid gap-2 border-t border-border/60 pt-4">
+              <Button asChild variant="outline">
+                <Link href="/sign-in" onClick={() => setIsOpen(false)}>
+                  Sign in
+                </Link>
+              </Button>
+              <Button asChild>
+                <Link href="/sign-up" onClick={() => setIsOpen(false)}>
+                  Get started
+                </Link>
+              </Button>
             </div>
           </nav>
         </div>

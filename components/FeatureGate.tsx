@@ -87,16 +87,20 @@ export function FeatureGate({
 
   // Default fallback with upgrade message
   return (
-    <div className="border border-dashed rounded-md p-6 bg-muted/20 flex flex-col items-center justify-center text-center">
-      <Lock className="h-10 w-10 text-muted-foreground mb-3" />
-      <h3 className="text-lg font-medium mb-2">Feature Restricted</h3>
-      <p className="text-muted-foreground mb-4 max-w-xs">
+    <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border/80 bg-muted/20 p-8 text-center">
+      <span className="mb-4 flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+        <Lock className="size-5" />
+      </span>
+      <h3 className="font-display text-lg font-semibold">Feature restricted</h3>
+      <p className="mb-5 mt-2 max-w-xs text-sm text-muted-foreground">
         This feature requires a{" "}
-        <span className="font-semibold capitalize">{requiredPlan}</span> plan or
-        higher.
+        <span className="font-semibold capitalize text-foreground">
+          {requiredPlan}
+        </span>{" "}
+        plan or higher.
       </p>
       <Button asChild>
-        <Link href="/pricing">Upgrade Now</Link>
+        <Link href="/pricing">Upgrade now</Link>
       </Button>
     </div>
   );

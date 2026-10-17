@@ -13,20 +13,16 @@ const Navbar = () => {
   const pathname = usePathname();
 
   const toggleTheme = () => {
-    theme === "light" ? setTheme("dark") : setTheme("light");
-    const newTheme = theme === "light" ? "dark" : "light";
-    localStorage.setItem("theme", newTheme);
-    document.body.classList.toggle("dark", newTheme === "dark");
+    setTheme(theme === "light" ? "dark" : "light");
   };
 
   useEffect(() => {
     const storedTheme = localStorage.getItem("theme") || "dark";
     setTheme(storedTheme);
-    document.body.classList.toggle("dark", storedTheme === "dark");
   }, []);
 
   useEffect(() => {
-    document.body.className = theme;
+    document.body.classList.toggle("dark", theme === "dark");
     localStorage.setItem("theme", theme);
   }, [theme]);
 
@@ -35,66 +31,78 @@ const Navbar = () => {
     { href: "/pricing", label: "Pricing" },
     { href: "/dashboard", label: "Dashboard" },
     { href: "/interviews", label: "My Interviews" },
-    { href: "/contact", label: "Contact Us" },
+    { href: "/contact", label: "Contact" },
   ];
 
   return (
-    <nav className="sticky top-0 px-4 md:px-12 py-3 bg-background/95 backdrop-blur-sm flex justify-between items-center border-b z-50">
-      <Link
-        href="/"
-        className="flex items-center gap-2 text-2xl font-bold text-text"
-      >
-        <Image
-          src="/snaphire.png"
-          alt="SnapHire Logo"
-          width={40}
-          height={40}
-          className="rounded-lg"
-        />
-        SnapHire
-      </Link>
-      <ul className="hidden md:flex items-center gap-6">
-        {navLinks.map((link) => {
-          const isActive = pathname === link.href;
-          return (
-            <li key={link.href}>
-              <Link
-                href={link.href}
-                className={`px-1 py-2 text-sm font-medium transition-colors hover:text-primary ${
-                  isActive ? "text-primary" : "text-muted-foreground"
-                }`}
-              >
-                {link.label}
-              </Link>
-            </li>
-          );
-        })}
-      </ul>{" "}
-      <div className="flex items-center gap-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          className="rounded-full"
-          onClick={toggleTheme}
-        >
-          {theme === "light" ? (
-            <Moon className="h-5 w-5" />
-          ) : (
-            <Sun className="h-5 w-5" />
-          )}
-        </Button>
+    <header className="sticky top-0 z-50 w-full border-b border-border/60 glass">
+      <nav className="mx-auto flex h-16 w-full max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <Link href="/" className="group flex items-center gap-2.5">
+          <span className="relative flex size-9 items-center justify-center overflow-hidden rounded-xl ring-1 ring-border transition-shadow group-hover:shadow-md group-hover:shadow-primary/20">
+            <Image
+              src="/snaphire.png"
+              alt="SnapHire Logo"
+              width={36}
+              height={36}
+              className="size-9 object-cover"
+            />
+          </span>
+          <span className="font-display text-lg font-bold tracking-tight">
+            SnapHire
+          </span>
+        </Link>
 
-        <div className="hidden md:flex items-center gap-2">
-          <Button asChild variant="ghost" className="inline-flex">
-            <Link href="/sign-in">Sign In</Link>
+        <ul className="hidden items-center gap-1 md:flex">
+          {navLinks.map((link) => {
+            const isActive =
+              link.href === "/"
+                ? pathname === "/"
+                : pathname.startsWith(link.href);
+            return (
+              <li key={link.href}>
+                <Link
+                  href={link.href}
+                  className={`rounded-full px-3.5 py-2 text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-secondary text-foreground"
+                      : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
+                  }`}
+                >
+                  {link.label}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-full"
+            aria-label="Toggle theme"
+            onClick={toggleTheme}
+          >
+            {theme === "light" ? (
+              <Moon className="size-[18px]" />
+            ) : (
+              <Sun className="size-[18px]" />
+            )}
           </Button>
-          <Button asChild>
-            <Link href="/sign-up">Sign Up</Link>
-          </Button>
+
+          <div className="hidden items-center gap-2 md:flex">
+            <Button asChild variant="ghost">
+              <Link href="/sign-in">Sign in</Link>
+            </Button>
+            <Button asChild className="rounded-xl">
+              <Link href="/sign-up">Get started</Link>
+            </Button>
+          </div>
+
+          <LandingMobileNav />
         </div>
-        <LandingMobileNav />
-      </div>
-    </nav>
+      </nav>
+    </header>
   );
 };
 

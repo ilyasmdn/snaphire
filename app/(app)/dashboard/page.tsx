@@ -8,6 +8,7 @@ import {
   BarChart,
   Clock,
   LineChart,
+  MessageSquare,
   Plus,
   Star,
   TrendingUp,
@@ -117,88 +118,104 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto p-6 flex justify-center items-center min-h-[70vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Loader2 className="size-8 animate-spin text-primary" />
       </div>
     );
   }
 
+  const statCards = [
+    {
+      label: "Total Interviews",
+      value: totalInterviews,
+      hint: totalInterviews > 0 ? "Keep practicing!" : "Start your journey",
+      icon: MessageSquare,
+    },
+    {
+      label: "Total Questions",
+      value: totalQuestions,
+      hint: "Practice regularly",
+      icon: Clock,
+    },
+    {
+      label: "Completed",
+      value: completedCount,
+      hint:
+        completedCount > 0
+          ? "Keep up the good work!"
+          : "Complete your first interview",
+      icon: Star,
+    },
+    {
+      label: "Completion Rate",
+      value: `${
+        totalInterviews > 0
+          ? Math.round((completedCount / totalInterviews) * 100)
+          : 0
+      }%`,
+      hint:
+        totalInterviews > 0 ? "Of interviews completed" : "Start your journey",
+      icon: BarChart,
+    },
+  ];
+
   return (
-    <div className="container mx-auto p-6 space-y-8">
+    <div className="space-y-10">
       {/* Welcome Section */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">
-            Welcome back, {user?.name || "User"}!
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
+          <h1 className="font-display text-3xl font-bold tracking-tight">
+            Welcome back, {user?.name || "there"} 👋
           </h1>
           <p className="text-muted-foreground">
             Track your progress and practice for your next interview
           </p>
         </div>
-        <Button asChild>
+        <Button asChild className="group w-fit">
           <Link href="/generate-interview" className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            New Interview
+            <Plus className="size-4" />
+            New interview
           </Link>
         </Button>
       </div>
 
       {/* Stats Overview */}
-      <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="p-4 flex flex-col">
-          <p className="text-sm text-muted-foreground">Total Interviews</p>
-          <p className="text-2xl font-bold mt-2">{totalInterviews}</p>
-          {totalInterviews > 0 && (
-            <div className="text-primary text-sm mt-2 flex items-center gap-1">
-              <TrendingUp className="h-4 w-4" />
-              Keep practicing!
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {statCards.map((stat) => (
+          <Card
+            key={stat.label}
+            className="card-hover gap-0 border-border/70 p-5"
+          >
+            <div className="flex items-start justify-between">
+              <p className="text-sm font-medium text-muted-foreground">
+                {stat.label}
+              </p>
+              <span className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <stat.icon className="size-[18px]" />
+              </span>
             </div>
-          )}
-        </Card>
-        <Card className="p-4 flex flex-col">
-          <p className="text-sm text-muted-foreground">Total Questions</p>
-          <p className="text-2xl font-bold mt-2">{totalQuestions}</p>
-          <div className="text-primary text-sm mt-2 flex items-center gap-1">
-            <Clock className="h-4 w-4" />
-            Practice regularly
-          </div>
-        </Card>
-        <Card className="p-4 flex flex-col">
-          <p className="text-sm text-muted-foreground">Completed Interviews</p>
-          <p className="text-2xl font-bold mt-2">{completedCount}</p>
-          <div className="text-primary text-sm mt-2 flex items-center gap-1">
-            <Star className="h-4 w-4" />
-            {completedCount > 0
-              ? "Keep up the good work!"
-              : "Complete your first interview"}
-          </div>
-        </Card>
-        <Card className="p-4 flex flex-col">
-          <p className="text-sm text-muted-foreground">Completion Rate</p>
-          <p className="text-2xl font-bold mt-2">
-            {totalInterviews > 0
-              ? Math.round((completedCount / totalInterviews) * 100)
-              : 0}
-            %
-          </p>
-          <div className="text-primary text-sm mt-2 flex items-center gap-1">
-            <BarChart className="h-4 w-4" />
-            {totalInterviews > 0
-              ? "Of interviews completed"
-              : "Start your journey"}
-          </div>
-        </Card>
+            <p className="mt-4 font-display text-3xl font-bold tracking-tight">
+              {stat.value}
+            </p>
+            <p className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground">
+              <TrendingUp className="size-3.5 text-primary" />
+              {stat.hint}
+            </p>
+          </Card>
+        ))}
       </div>
 
       {/* Recent Interviews */}
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <h2 className="text-xl font-semibold">Recent Interviews</h2>
-          <Button variant="outline" asChild>
-            <Link href="/interviews">View All</Link>
+      <section className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="font-display text-xl font-semibold">
+            Recent Interviews
+          </h2>
+          <Button variant="outline" size="sm" asChild>
+            <Link href="/interviews">View all</Link>
           </Button>
         </div>
-        <div className="grid gap-4">
+        <div className="grid gap-3">
           {recentInterviews.length > 0 ? (
             recentInterviews.map((interview) => (
               <InterviewCard
@@ -208,143 +225,146 @@ export default function DashboardPage() {
               />
             ))
           ) : (
-            <Card className="p-6 text-center">
-              <p className="text-muted-foreground">No interviews yet.</p>
-              <p className="text-muted-foreground mt-1">
-                Create your first interview to get started.
-              </p>
-              <Button asChild className="mt-4">
-                <Link href="/generate-interview">New Interview</Link>
+            <Card className="items-center p-10 text-center">
+              <span className="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                <Plus className="size-6" />
+              </span>
+              <div className="space-y-1">
+                <p className="font-medium">No interviews yet</p>
+                <p className="text-sm text-muted-foreground">
+                  Create your first interview to get started.
+                </p>
+              </div>
+              <Button asChild>
+                <Link href="/generate-interview">New interview</Link>
               </Button>
             </Card>
           )}
         </div>
-      </div>
+      </section>
 
-      {/* Popular Interview Types */}
+      {/* Your Interview Types */}
       {uniqueTypes.length > 0 && (
-        <div className="space-y-4">
-          <div className="flex justify-between items-center">
-            <div className="space-y-1">
-              <h2 className="text-xl font-semibold">Your Interview Types</h2>
-              <p className="text-sm text-muted-foreground">
-                Interview types you've practiced
-              </p>
-            </div>
+        <section className="space-y-4">
+          <div>
+            <h2 className="font-display text-xl font-semibold">
+              Your interview types
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Interview types you&apos;ve practiced
+            </p>
           </div>
           <div className="flex flex-wrap gap-2">
             {uniqueTypes.map((type) => (
-              <div
+              <span
                 key={type}
-                className="px-3 py-1.5 rounded-full bg-primary/10 text-sm font-medium text-primary"
+                className="rounded-full border border-primary/15 bg-primary/10 px-3.5 py-1.5 text-sm font-medium capitalize text-primary"
               >
                 {type}
-              </div>
+              </span>
             ))}
           </div>
-        </div>
+        </section>
       )}
 
       {/* Performance Insights - Pro feature */}
       <FeatureGate feature="advanced_analytics">
-        <div className="space-y-4 mt-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold">Performance Insights</h2>
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-xl font-semibold">
+              Performance Insights
+            </h2>
             <Button size="sm" variant="outline" asChild>
-              <Link href="/analytics">View Details</Link>
+              <Link href="/analytics">View details</Link>
             </Button>
           </div>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <Card className="p-5">
-              <h3 className="font-medium mb-3">Key Strengths</h3>
+            <Card className="p-6">
+              <h3 className="mb-4 font-medium">Key strengths</h3>
               {totalInterviews > 0 ? (
-                <ul className="space-y-2">
-                  <li className="flex items-center gap-2 text-sm">
-                    <div className="bg-green-100 p-1 rounded-full">
-                      <Star className="h-4 w-4 text-green-600" />
-                    </div>
-                    Communication skills
-                  </li>
-                  <li className="flex items-center gap-2 text-sm">
-                    <div className="bg-green-100 p-1 rounded-full">
-                      <Star className="h-4 w-4 text-green-600" />
-                    </div>
-                    Problem-solving approach
-                  </li>
+                <ul className="space-y-3">
+                  {["Communication skills", "Problem-solving approach"].map(
+                    (item) => (
+                      <li key={item} className="flex items-center gap-3 text-sm">
+                        <span className="flex size-7 items-center justify-center rounded-full bg-emerald-500/10">
+                          <Star className="size-3.5 text-emerald-500" />
+                        </span>
+                        {item}
+                      </li>
+                    )
+                  )}
                 </ul>
               ) : (
-                <p className="text-muted-foreground text-sm">
+                <p className="text-sm text-muted-foreground">
                   Complete an interview to see your strengths
                 </p>
               )}
             </Card>
 
-            <Card className="p-5">
-              <h3 className="font-medium mb-3">Areas to Improve</h3>
+            <Card className="p-6">
+              <h3 className="mb-4 font-medium">Areas to improve</h3>
               {totalInterviews > 0 ? (
-                <ul className="space-y-2">
-                  <li className="flex items-center gap-2 text-sm">
-                    <div className="bg-amber-100 p-1 rounded-full">
-                      <TrendingUp className="h-4 w-4 text-amber-600" />
-                    </div>
-                    Technical depth
-                  </li>
-                  <li className="flex items-center gap-2 text-sm">
-                    <div className="bg-amber-100 p-1 rounded-full">
-                      <TrendingUp className="h-4 w-4 text-amber-600" />
-                    </div>
-                    Answering behavioral questions
-                  </li>
+                <ul className="space-y-3">
+                  {["Technical depth", "Answering behavioral questions"].map(
+                    (item) => (
+                      <li key={item} className="flex items-center gap-3 text-sm">
+                        <span className="flex size-7 items-center justify-center rounded-full bg-amber-500/10">
+                          <TrendingUp className="size-3.5 text-amber-500" />
+                        </span>
+                        {item}
+                      </li>
+                    )
+                  )}
                 </ul>
               ) : (
-                <p className="text-muted-foreground text-sm">
+                <p className="text-sm text-muted-foreground">
                   Complete an interview to see improvement areas
                 </p>
               )}
             </Card>
           </div>
-        </div>
+        </section>
       </FeatureGate>
 
       {/* Learning Resources - Pro feature */}
       <FeatureGate feature="learning_resources">
-        <div className="space-y-4 mt-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-xl font-semibold">Recommended Resources</h2>
+        <section className="space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="font-display text-xl font-semibold">
+              Recommended resources
+            </h2>
             <Button size="sm" variant="outline" asChild>
-              <Link href="/resources">View All</Link>
+              <Link href="/resources">View all</Link>
             </Button>
           </div>
 
-          <div className="grid gap-3">
-            <Card className="p-4 hover:bg-muted/30 transition-colors">
-              <Link href="/resources/star-method" className="flex gap-3">
-                <div className="bg-primary/10 p-2 rounded-lg h-fit">
-                  <Star className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <h3 className="font-medium">STAR Method Guide</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Structure your interview answers effectively
-                  </p>
-                </div>
-              </Link>
-            </Card>
-          </div>
-        </div>
+          <Card className="card-hover gap-0 p-5">
+            <Link href="/resources/star-method" className="flex gap-4">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <Star className="size-5" />
+              </span>
+              <div>
+                <h3 className="font-medium">STAR Method Guide</h3>
+                <p className="text-sm text-muted-foreground">
+                  Structure your interview answers effectively
+                </p>
+              </div>
+            </Link>
+          </Card>
+        </section>
       </FeatureGate>
 
       {/* Quick Tips */}
-      <Card className="p-6 bg-primary/5 border-primary/10">
+      <Card className="gap-0 border-primary/15 bg-gradient-to-br from-primary/10 via-card to-accent/10 p-6">
         <div className="flex items-start gap-4">
-          <div className="p-2 bg-primary/10 rounded-lg">
-            <Star className="h-5 w-5 text-primary" />
-          </div>
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/15 text-primary">
+            <Star className="size-5" />
+          </span>
           <div>
-            <h3 className="font-semibold">Pro Tips</h3>
-            <p className="text-sm text-muted-foreground mt-1">
-              Regular practice is key! Try to complete at least 2-3 mock
+            <h3 className="font-display font-semibold">Pro tip</h3>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Regular practice is key! Try to complete at least 2–3 mock
               interviews per week for the best results in your real interviews.
             </p>
           </div>

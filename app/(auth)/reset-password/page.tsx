@@ -57,7 +57,7 @@ function ResetPasswordForm() {
 
   if (codeValid === false) {
     return (
-      <div className="w-full max-w-md mx-auto my-6 text-center text-red-500">
+      <div className="w-full text-center text-sm text-red-500">
         Invalid or expired reset link.
       </div>
     );
@@ -65,17 +65,17 @@ function ResetPasswordForm() {
 
   if (codeValid === null) {
     return (
-      <div className="w-full max-w-md mx-auto my-6 text-center">
-        <Loader2 className="animate-spin inline-block mr-2" />
+      <div className="w-full text-center text-sm text-muted-foreground">
+        <Loader2 className="mr-2 inline-block size-4 animate-spin" />
         Validating link...
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-md mx-auto my-6 p-6 bg-card border rounded-xl shadow">
-      <h1 className="text-2xl font-bold mb-4 text-center">
-        Reset Your Password
+    <div className="w-full p-7 bg-card border border-border/70 rounded-2xl shadow-xl shadow-black/[0.04] dark:shadow-black/30">
+      <h1 className="font-display text-2xl font-bold mb-4 text-center tracking-tight">
+        Reset your password
       </h1>
 
       {/* New Password */}
@@ -93,7 +93,7 @@ function ResetPasswordForm() {
         <button
           type="button"
           onClick={() => setShowPassword((prev) => !prev)}
-          className="absolute right-3 top-2.5 text-muted-foreground"
+          className="absolute right-3 top-3.5 text-muted-foreground"
           aria-label={showPassword ? "Hide password" : "Show password"}
         >
           {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}

@@ -9,7 +9,6 @@ import {
   TrendingUp,
   MessageSquare,
   Loader2,
-  Lock,
 } from "lucide-react";
 import {
   BarChart,
@@ -28,8 +27,7 @@ import {
   Radar,
 } from "recharts";
 import { useFeatureAccess } from "@/lib/hooks/use-feature-access";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import { UpgradeCard } from "@/components/UpgradeCard";
 
 
 interface Interview {
@@ -194,61 +192,60 @@ export default function AnalyticsPage() {
 
   if (!hasAdvancedAnalyticsAccess) {
     return (
-      <div className="container py-10">
-        <h1 className="text-3xl font-bold mb-8">Analytics</h1>
+      <div className="space-y-8 py-6">
+        <div className="space-y-1">
+          <h1 className="font-display text-3xl font-bold tracking-tight">
+            Analytics
+          </h1>
+          <p className="text-muted-foreground">
+            Track your interview performance and progress
+          </p>
+        </div>
 
-        <Card className="p-8 max-w-2xl mx-auto">
-          <div className="flex flex-col items-center text-center">
-            <div className="p-3 rounded-full bg-amber-100 mb-4">
-              <Lock className="h-8 w-8 text-amber-700" />
-            </div>
-
-            <h2 className="text-2xl font-bold mb-2">Advanced Analytics</h2>
-
-            <p className="text-muted-foreground mb-6">
-              Advanced analytics are available with our Pro subscription plan.
-              Upgrade to access performance insights, trend analysis, and
-              detailed feedback reports.
-            </p>
-
-            <Button asChild>
-              <Link href="/pricing">Upgrade to Pro</Link>
-            </Button>
-          </div>
-        </Card>
+        <UpgradeCard
+          title="Advanced analytics"
+          description="Advanced analytics are available with our Pro subscription plan. Upgrade to access performance insights, trend analysis, and detailed feedback reports."
+          primaryLabel="Upgrade to Pro"
+        />
       </div>
     );
   }
 
   if (loading) {
     return (
-      <div className="container mx-auto p-6 flex justify-center items-center min-h-[70vh]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <Loader2 className="size-8 animate-spin text-primary" />
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold">Analytics Dashboard</h1>
+    <div className="space-y-8">
+      <div className="space-y-1">
+        <h1 className="font-display text-3xl font-bold tracking-tight">
+          Analytics Dashboard
+        </h1>
         <p className="text-muted-foreground">
           Track your interview performance and progress
         </p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {stats.map((stat) => (
-          <Card key={stat.label} className="p-6">
+          <Card key={stat.label} className="card-hover gap-0 p-5">
             <div className="flex items-center justify-between">
-              <stat.icon className="h-5 w-5 text-muted-foreground" />
+              <span className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <stat.icon className="size-[18px]" />
+              </span>
               <span className="text-xs font-medium text-primary">
                 {stat.change}
               </span>
             </div>
             <div className="mt-4">
-              <h3 className="text-xl font-bold">{stat.value}</h3>
+              <h3 className="font-display text-2xl font-bold tracking-tight">
+                {stat.value}
+              </h3>
               <p className="text-sm text-muted-foreground">{stat.label}</p>
             </div>
           </Card>
@@ -256,13 +253,15 @@ export default function AnalyticsPage() {
       </div>
 
       {/* Charts Section */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="p-6 bg-card">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <TrendingUp className="h-5 w-5 text-primary" />
-            </div>
-            <h3 className="text-lg font-semibold">Performance Trend</h3>
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card className="gap-0 p-6">
+          <div className="mb-6 flex items-center gap-3">
+            <span className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <TrendingUp className="size-[18px]" />
+            </span>
+            <h3 className="font-display text-lg font-semibold">
+              Performance Trend
+            </h3>
           </div>
           {performanceData.length > 0 ? (
             <div className="h-[300px]">
@@ -325,12 +324,14 @@ export default function AnalyticsPage() {
           )}
         </Card>
 
-        <Card className="p-6 bg-card">
-          <div className="flex items-center gap-2 mb-6">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <BarChartIcon className="h-5 w-5 text-primary" />
-            </div>
-            <h3 className="text-lg font-semibold">Performance Categories</h3>
+        <Card className="gap-0 p-6">
+          <div className="mb-6 flex items-center gap-3">
+            <span className="flex size-9 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <BarChartIcon className="size-[18px]" />
+            </span>
+            <h3 className="font-display text-lg font-semibold">
+              Performance Categories
+            </h3>
           </div>
           {performanceCategoryData.length > 0 ? (
             <div className="h-[300px]">

@@ -77,30 +77,36 @@ export default function ContactPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 md:px-12 py-12 md:py-16">
-      <div className="text-center mb-12">
-        <h1 className="text-3xl md:text-4xl font-bold">Get in Touch</h1>
-        <p className="text-text/50 mt-2 max-w-xl mx-auto">
-          Have questions or need help? Contact our support team and we'll get
-          back to you as soon as possible.
+    <div className="mx-auto w-full max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+      <div className="aurora relative mx-auto mb-14 max-w-2xl text-center">
+        <h1 className="font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
+          Get in touch
+        </h1>
+        <p className="mt-4 text-lg text-muted-foreground">
+          Have questions or need help? Contact our support team and we&apos;ll
+          get back to you as soon as possible.
         </p>
       </div>
 
-      <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
+      <div className="grid gap-8 md:grid-cols-3 lg:gap-12">
         {/* Contact Information */}
-        <div className="md:col-span-1 space-y-8">
-          <div className="bg-secondary/10 p-6 rounded-lg">
-            <h2 className="text-xl font-semibold mb-4">Contact Information</h2>
+        <div className="space-y-6 md:col-span-1">
+          <div className="rounded-2xl border border-border/70 bg-card p-6">
+            <h2 className="font-display text-lg font-semibold">
+              Contact information
+            </h2>
 
-            <div className="space-y-6">
+            <div className="mt-5 space-y-6">
               <div className="flex items-start gap-4">
-                <div className="p-2 rounded-full bg-primary/10">
-                  <Mail className="h-5 w-5 text-primary" />
+                <div className="rounded-xl bg-primary/10 p-2.5">
+                  <Mail className="size-5 text-primary" />
                 </div>
                 <div>
                   <h3 className="font-medium">Email</h3>
-                  <p className="text-text/70">snapstudio2025@gmail.com</p>
-                  <p className="text-sm text-text/50 mt-1">
+                  <p className="text-sm text-muted-foreground">
+                    snapstudio2025@gmail.com
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground/80">
                     For general inquiries and support
                   </p>
                 </div>
@@ -108,15 +114,19 @@ export default function ContactPage() {
             </div>
           </div>
 
-          <div className="bg-primary/5 p-6 rounded-lg">
-            <h2 className="text-xl font-semibold mb-3">Business Hours</h2>
-            <div className="space-y-2">
+          <div className="rounded-2xl border border-border/70 bg-gradient-to-br from-primary/10 via-card to-accent/10 p-6">
+            <h2 className="font-display text-lg font-semibold">
+              Business hours
+            </h2>
+            <div className="mt-4 space-y-2.5 text-sm">
               <div className="flex justify-between">
-                <span className="text-text/70">Monday - Friday</span>
+                <span className="text-muted-foreground">Monday - Friday</span>
                 <span className="font-medium">9:00 AM - 5:00 PM EST</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-text/70">Saturday - Sunday</span>
+                <span className="text-muted-foreground">
+                  Saturday - Sunday
+                </span>
                 <span className="font-medium">Closed</span>
               </div>
             </div>
@@ -125,23 +135,31 @@ export default function ContactPage() {
 
         {/* Contact Form */}
         <div className="md:col-span-2">
-          <div className="bg-background border rounded-lg p-6 md:p-8 shadow-sm">
-            <h2 className="text-xl font-semibold mb-6">Send Us a Message</h2>
+          <div className="rounded-2xl border border-border/70 bg-card p-6 shadow-sm md:p-8">
+            <h2 className="font-display text-lg font-semibold">
+              Send us a message
+            </h2>
 
             {isSubmitted ? (
-              <div className="flex flex-col items-center justify-center text-center py-8">
-                <div className="p-3 rounded-full bg-green-50 mb-4">
-                  <CheckCircle className="h-8 w-8 text-green-500" />
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <div className="mb-5 rounded-2xl bg-green-500/10 p-3.5">
+                  <CheckCircle className="size-8 text-green-500" />
                 </div>
-                <h3 className="text-xl font-semibold">Message Sent!</h3>
-                <p className="text-text/70 mt-2 max-w-md">
-                  Thank you for reaching out. We've received your message and
-                  will get back to you as soon as possible. A confirmation email
-                  has been sent to your inbox.
+                <h3 className="font-display text-xl font-semibold">
+                  Message sent!
+                </h3>
+                <p className="mt-2 max-w-md text-muted-foreground">
+                  Thank you for reaching out. We&apos;ve received your message
+                  and will get back to you as soon as possible. A confirmation
+                  email has been sent to your inbox.
                 </p>
               </div>
             ) : (
-              <form ref={form} onSubmit={handleSubmit} className="space-y-6">
+              <form
+                ref={form}
+                onSubmit={handleSubmit}
+                className="mt-6 space-y-5"
+              >
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <label htmlFor="user_name" className="text-sm font-medium">
@@ -195,24 +213,25 @@ export default function ContactPage() {
                 </div>
 
                 {errorMessage && (
-                  <div className="p-3 bg-red-50 border border-red-200 text-red-600 text-sm rounded-md">
+                  <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
                     {errorMessage}
                   </div>
                 )}
 
                 <Button
                   type="submit"
+                  size="lg"
                   className="w-full md:w-auto"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="mr-2 size-4 animate-spin" />
                       Sending...
                     </>
                   ) : (
                     <>
-                      Send Message <Send className="ml-2 h-4 w-4" />
+                      Send message <Send className="ml-2 size-4" />
                     </>
                   )}
                 </Button>
@@ -223,54 +242,45 @@ export default function ContactPage() {
       </div>
 
       {/* FAQ Section */}
-      <div className="mt-16 lg:mt-24">
-        <div className="text-center mb-8">
-          <h2 className="text-2xl font-bold">Frequently Asked Questions</h2>
-          <p className="text-text/50 mt-2">
+      <div className="mt-20">
+        <div className="mb-10 text-center">
+          <h2 className="font-display text-3xl font-bold tracking-tight">
+            Frequently asked questions
+          </h2>
+          <p className="mt-3 text-muted-foreground">
             Find quick answers to common questions
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="bg-background p-6 rounded-lg border">
-            <h3 className="font-semibold mb-2">
-              How do I cancel my subscription?
-            </h3>
-            <p className="text-text/70">
-              You can cancel your subscription at any time from your account
-              settings. Navigate to Settings → Billing and click on "Cancel
-              Subscription".
-            </p>
-          </div>
-
-          <div className="bg-background p-6 rounded-lg border">
-            <h3 className="font-semibold mb-2">
-              What payment methods do you accept?
-            </h3>
-            <p className="text-text/70">
-              We accept all major credit cards including Visa, Mastercard, and
-              American Express. We also support PayPal for payments.
-            </p>
-          </div>
-
-          <div className="bg-background p-6 rounded-lg border">
-            <h3 className="font-semibold mb-2">Can I get a refund?</h3>
-            <p className="text-text/70">
-              We offer a 7-day money-back guarantee for all subscription plans.
-              Contact our support team to process your refund if you're not
-              satisfied.
-            </p>
-          </div>
-
-          <div className="bg-background p-6 rounded-lg border">
-            <h3 className="font-semibold mb-2">
-              Do you offer discounts for teams?
-            </h3>
-            <p className="text-text/70">
-              Yes! We offer special pricing for teams of 5 or more. Contact our
-              sales team at snapstudio2025@gmail.com for more information.
-            </p>
-          </div>
+        <div className="grid gap-5 md:grid-cols-2">
+          {[
+            {
+              q: "How do I cancel my subscription?",
+              a: "You can cancel your subscription at any time from your account settings. Navigate to Settings → Billing and click on \"Cancel Subscription\".",
+            },
+            {
+              q: "What payment methods do you accept?",
+              a: "We accept all major credit cards including Visa, Mastercard, and American Express. We also support PayPal for payments.",
+            },
+            {
+              q: "Can I get a refund?",
+              a: "We offer a 7-day money-back guarantee for all subscription plans. Contact our support team to process your refund if you're not satisfied.",
+            },
+            {
+              q: "Do you offer discounts for teams?",
+              a: "Yes! We offer special pricing for teams of 5 or more. Contact our sales team at snapstudio2025@gmail.com for more information.",
+            },
+          ].map((faq) => (
+            <div
+              key={faq.q}
+              className="card-hover rounded-2xl border border-border/70 bg-card p-6"
+            >
+              <h3 className="font-display font-semibold">{faq.q}</h3>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                {faq.a}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
     </div>
